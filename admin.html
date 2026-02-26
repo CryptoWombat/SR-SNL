@@ -501,9 +501,11 @@
       document.querySelectorAll(".admin-locked").forEach(el => el.classList.remove("admin-locked"));
     }
 
-    if (sessionStorage.getItem("admin_auth") === "1") {
+    if (sessionStorage.getItem("admin_auth") === "1" && sessionStorage.getItem("admin_pw")) {
       revealAdmin();
     } else {
+      sessionStorage.removeItem("admin_auth");
+      sessionStorage.removeItem("admin_pw");
       document.getElementById("auth-submit").addEventListener("click", tryUnlock);
       document.getElementById("auth-password").addEventListener("keydown", e => {
         if (e.key === "Enter") tryUnlock();
