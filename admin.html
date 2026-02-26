@@ -275,17 +275,82 @@
 
       header h1 { font-size: 1.2rem; }
     }
+    #auth-gate {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-dark, #0a0e1a);
+      font-family: var(--font-display, 'Exo 2', sans-serif);
+    }
+
+    #auth-gate h2 {
+      font-size: 1.8rem;
+      color: #ffcc00;
+      letter-spacing: 0.15em;
+      margin-bottom: 24px;
+    }
+
+    #auth-gate input {
+      font-family: var(--font-mono, 'Space Mono', monospace);
+      font-size: 1.1rem;
+      padding: 10px 16px;
+      border-radius: 6px;
+      border: 1px solid #555;
+      background: #1a1f30;
+      color: #e0e0e0;
+      width: 260px;
+      text-align: center;
+      outline: none;
+    }
+
+    #auth-gate input:focus { border-color: #ffcc00; }
+
+    #auth-gate button {
+      margin-top: 14px;
+      font-family: var(--font-display, 'Exo 2', sans-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      padding: 10px 32px;
+      border-radius: 6px;
+      border: none;
+      background: #ffcc00;
+      color: #0a0e1a;
+      cursor: pointer;
+      letter-spacing: 0.08em;
+    }
+
+    #auth-gate button:hover { background: #ffd633; }
+
+    #auth-gate .auth-error {
+      color: #ff4444;
+      margin-top: 12px;
+      font-size: 0.95rem;
+      min-height: 1.2em;
+    }
+
+    .admin-locked { display: none !important; }
   </style>
 </head>
 <body>
+  <div id="auth-gate">
+    <h2>🔒 BOARD EDITOR</h2>
+    <input type="password" id="auth-password" placeholder="Enter password" autofocus>
+    <button id="auth-submit">UNLOCK</button>
+    <div class="auth-error" id="auth-error"></div>
+  </div>
+
   <div id="stars"></div>
   <div id="stars2"></div>
 
-  <header>
+  <header class="admin-locked">
     <h1>BOARD EDITOR</h1>
   </header>
 
-  <div class="admin-layout">
+  <div class="admin-layout admin-locked">
     <div class="board-wrapper">
       <div class="admin-board-container board-container">
         <div id="board" class="board-grid"></div>
@@ -407,6 +472,43 @@
   <button id="roll-btn" style="display:none;"></button>
   <button id="reset-btn" style="display:none;"></button>
   <div class="dice-section" style="display:none;"></div>
+
+  <script>
+    const PASS_HASH = "f7622e6423c6f491fb0b10937838b228be09cc03a192d511c643f8a017732de2";
+
+    async function sha256(text) {
+      const data = new TextEncoder().encode(text);
+      const buf = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+    }
+
+    async function tryUnlock() {
+      const pw = document.getElementById("auth-password").value;
+      const hash = await sha256(pw);
+      if (hash === PASS_HASH) {
+        sessionStorage.setItem("admin_auth", "1");
+        revealAdmin();
+      } else {
+        document.getElementById("auth-error").textContent = "Incorrect password";
+        document.getElementById("auth-password").value = "";
+        document.getElementById("auth-password").focus();
+      }
+    }
+
+    function revealAdmin() {
+      document.getElementById("auth-gate").remove();
+      document.querySelectorAll(".admin-locked").forEach(el => el.classList.remove("admin-locked"));
+    }
+
+    if (sessionStorage.getItem("admin_auth") === "1") {
+      revealAdmin();
+    } else {
+      document.getElementById("auth-submit").addEventListener("click", tryUnlock);
+      document.getElementById("auth-password").addEventListener("keydown", e => {
+        if (e.key === "Enter") tryUnlock();
+      });
+    }
+  </script>
 
   <script src="game.js"></script>
   <script>
