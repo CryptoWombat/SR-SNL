@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Race — Board Editor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .admin-layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 24px;
+      max-width: 1800px;
+      margin: 10px auto;
+      padding: 0 20px 20px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .admin-panel {
+      flex: 0 0 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-height: calc(100vh - 120px);
+      overflow-y: auto;
+    }
+
+    .admin-panel section {
+      background: var(--panel-bg);
+      border: 1px solid var(--panel-border);
+      border-radius: 6px;
+      padding: 18px;
+    }
+
+    .admin-panel h2 {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: var(--text-accent);
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .admin-panel h3 {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .status-bar {
+      text-align: center;
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: all 0.3s;
+    }
+
+    .status-saved {
+      background: rgba(39, 174, 96, 0.15);
+      border: 1px solid rgba(39, 174, 96, 0.4);
+      color: #2ecc71;
+    }
+
+    .status-info {
+      background: rgba(52, 152, 219, 0.15);
+      border: 1px solid rgba(52, 152, 219, 0.4);
+      color: #5ba8ff;
+    }
+
+    .admin-board-container {
+      position: relative;
+      width: calc(100vh - 200px);
+      height: calc(100vh - 200px);
+      max-width: calc(100vw - 460px);
+    }
+
+    .admin-board-container .cell {
+      cursor: pointer;
+    }
+
+    .admin-board-container .cell.selected-cell {
+      outline: 3px solid var(--text-accent) !important;
+      outline-offset: -3px;
+      z-index: 6;
+    }
+
+    .back-link {
+      display: inline-block;
+      color: var(--text-accent);
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .back-link:hover { opacity: 0.7; }
+
+    /* Square editor */
+    .sq-editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .sq-editor-header h2 { margin-bottom: 0; }
+
+    .sq-num-badge {
+      font-family: var(--font-display);
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-accent);
+      background: rgba(255, 204, 0, 0.1);
+      border: 1px solid rgba(255, 204, 0, 0.3);
+      border-radius: 6px;
+      padding: 2px 14px;
+    }
+
+    .editor-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .editor-row label {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      min-width: 80px;
+      white-space: nowrap;
+    }
+
+    .editor-row select,
+    .editor-row input,
+    .editor-row textarea {
+      flex: 1;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      padding: 6px 10px;
+      background: #0a0a1a;
+      border: 1px solid var(--panel-border);
+      border-radius: 4px;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .editor-row select:focus,
+    .editor-row input:focus,
+    .editor-row textarea:focus {
+      border-color: var(--text-accent);
+    }
+
+    .editor-row textarea {
+      resize: vertical;
+      min-height: 50px;
+    }
+
+    .editor-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .editor-actions .btn { flex: 1; font-size: 0.85rem; padding: 8px 12px; }
+
+    .btn-save-sq {
+      background: linear-gradient(135deg, #27ae60, #229954);
+      color: #fff;
+    }
+    .btn-save-sq:hover { background: linear-gradient(135deg, #2ecc71, #27ae60); }
+
+    .btn-clear-sq {
+      background: linear-gradient(135deg, #7f8c8d, #6c7a7a);
+      color: #fff;
+    }
+    .btn-clear-sq:hover { background: linear-gradient(135deg, #95a5a6, #7f8c8d); }
+
+    .no-selection {
+      color: var(--text-secondary);
+      font-style: italic;
+      text-align: center;
+      padding: 20px 10px;
+      font-size: 0.9rem;
+    }
+
+    .admin-panel::-webkit-scrollbar { width: 6px; }
+    .admin-panel::-webkit-scrollbar-track { background: var(--space-bg); }
+    .admin-panel::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 3px; }
+
+    /* Admin responsive */
+    @media (max-width: 1100px) {
+      .admin-panel { flex: 0 0 340px; }
+      .admin-board-container {
+        max-width: calc(100vw - 400px);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .admin-layout {
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .admin-board-container {
+        width: min(85vw, 500px);
+        height: min(85vw, 500px);
+        max-width: none;
+      }
+
+      .admin-panel {
+        flex: 0 0 auto;
+        width: min(85vw, 500px);
+        max-height: none;
+      }
+
+      header h1 { font-size: clamp(1.6rem, 4vw, 2.5rem); }
+    }
+
+    @media (max-width: 600px) {
+      .admin-layout {
+        padding: 0 10px 16px;
+        gap: 12px;
+      }
+
+      .admin-board-container {
+        width: min(95vw, 420px);
+        height: min(95vw, 420px);
+      }
+
+      .admin-panel {
+        width: min(95vw, 420px);
+      }
+
+      .admin-panel section { padding: 14px; }
+      .admin-panel h2 { font-size: 1rem; }
+      .admin-panel h3 { font-size: 0.85rem; }
+
+      .editor-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+      }
+
+      .editor-row label {
+        min-width: auto;
+        font-size: 0.85rem;
+      }
+
+      .editor-actions {
+        flex-direction: column;
+      }
+
+      header h1 { font-size: clamp(1.3rem, 5vw, 2rem); }
+    }
+
+    @media (max-width: 400px) {
+      .admin-board-container {
+        width: 98vw;
+        height: 98vw;
+      }
+
+      .admin-panel { width: 98vw; }
+      .admin-panel section { padding: 10px; }
+
+      header h1 { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="stars"></div>
+  <div id="stars2"></div>
+
+  <header>
+    <h1>BOARD EDITOR</h1>
+  </header>
+
+  <div class="admin-layout">
+    <div class="board-wrapper">
+      <div class="admin-board-container board-container">
+        <div id="board" class="board-grid"></div>
+        <canvas id="connections-canvas"></canvas>
+        <div id="player-tokens"></div>
+      </div>
+    </div>
+
+    <div class="admin-panel">
+      <a href="index.html" class="back-link">&larr; Back to Game</a>
+
+      <div id="status-bar" class="status-bar status-info">
+        Click a square to edit it. Configure rockets &amp; meteors below.
+      </div>
+
+      <!-- Square Editor -->
+      <section id="square-editor-section">
+        <div id="sq-no-selection" class="no-selection">
+          Click any square on the board to edit it.
+        </div>
+        <div id="sq-editor" style="display:none;">
+          <div class="sq-editor-header">
+            <h2>SQUARE EDITOR</h2>
+            <span id="sq-num-badge" class="sq-num-badge">#1</span>
+          </div>
+          <div class="editor-row">
+            <label>Country:</label>
+            <select id="sq-country">
+              <option value="">Neutral</option>
+              <option value="ussr">USSR (Red)</option>
+              <option value="usa">USA (Blue)</option>
+            </select>
+          </div>
+          <div class="editor-row">
+            <label>Type:</label>
+            <select id="sq-sentiment">
+              <option value="good">Achievement</option>
+              <option value="bad">Setback</option>
+            </select>
+          </div>
+          <div class="editor-row">
+            <label>Year:</label>
+            <input type="text" id="sq-year" placeholder="e.g. 1961">
+          </div>
+          <div class="editor-row">
+            <label>Title:</label>
+            <input type="text" id="sq-title" placeholder="Event name">
+          </div>
+          <div class="editor-row">
+            <label>Description:</label>
+            <textarea id="sq-desc" placeholder="Event description..."></textarea>
+          </div>
+          <div class="editor-row">
+            <label>Action:</label>
+            <input type="number" id="sq-action" placeholder="0" min="-99" max="99">
+          </div>
+          <p class="form-hint" style="margin-top:2px;">Positive = move forward, negative = move backward, 0 = none</p>
+          <div class="editor-actions">
+            <button class="btn btn-save-sq" id="sq-save-btn">SAVE SQUARE</button>
+            <button class="btn btn-clear-sq" id="sq-clear-btn">RESET TO DEFAULT</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rockets & Meteors -->
+      <section>
+        <h2>ROCKETS &amp; METEORS</h2>
+        <div class="control-tabs">
+          <button class="tab-btn active" data-tab="rocket">🚀 Rockets</button>
+          <button class="tab-btn" data-tab="meteor">☄️ Meteors</button>
+        </div>
+
+        <div class="control-form" id="rocket-form">
+          <p class="form-hint">Rockets launch players upward (like ladders)</p>
+          <div class="form-row">
+            <label>From square:</label>
+            <input type="number" id="rocket-from" min="2" max="99" placeholder="2-99">
+          </div>
+          <div class="form-row">
+            <label>To square:</label>
+            <input type="number" id="rocket-to" min="2" max="99" placeholder="Higher #">
+          </div>
+          <button class="btn btn-add" id="add-rocket-btn">ADD ROCKET 🚀</button>
+        </div>
+
+        <div class="control-form hidden" id="meteor-form">
+          <p class="form-hint">Meteors send players crashing down (like snakes)</p>
+          <div class="form-row">
+            <label>From square:</label>
+            <input type="number" id="meteor-from" min="2" max="99" placeholder="2-99">
+          </div>
+          <div class="form-row">
+            <label>To square:</label>
+            <input type="number" id="meteor-to" min="2" max="99" placeholder="Lower #">
+          </div>
+          <button class="btn btn-add" id="add-meteor-btn">ADD METEOR ☄️</button>
+        </div>
+
+        <h3 style="margin-top:12px;">Active Connections</h3>
+        <div id="connections-list-content">
+          <p class="empty-msg">No rockets or meteors placed yet.</p>
+        </div>
+      </section>
+
+      <button id="clear-all-btn" class="btn btn-reset">CLEAR ALL CONNECTIONS</button>
+    </div>
+  </div>
+
+  <div id="tooltip" class="tooltip hidden"></div>
+
+  <!-- Hidden elements required by game.js -->
+  <div id="winner-overlay" class="winner-overlay hidden">
+    <div class="winner-content"><h2 id="winner-text"></h2><p id="winner-sub"></p></div>
+  </div>
+  <div id="turn-indicator" style="display:none;"></div>
+  <div id="ussr-pos" style="display:none;"></div>
+  <div id="usa-pos" style="display:none;"></div>
+  <div id="dice" style="display:none;"></div>
+  <button id="roll-btn" style="display:none;"></button>
+  <button id="reset-btn" style="display:none;"></button>
+  <div class="dice-section" style="display:none;"></div>
+
+  <script src="game.js"></script>
+  <script>
+    const statusBar = document.getElementById("status-bar");
+    let selectedSquare = null;
+
+    // ── Save helpers ──
+
+    function showStatus(msg, type) {
+      statusBar.textContent = msg;
+      statusBar.className = "status-bar " + (type === "saved" ? "status-saved" : "status-info");
+      if (type === "saved") {
+        setTimeout(() => {
+          statusBar.textContent = "Click a square to edit it. Configure rockets & meteors below.";
+          statusBar.className = "status-bar status-info";
+        }, 2000);
+      }
+    }
+
+    function saveConnectionsToStorage() {
+      localStorage.setItem("spacerace-connections", JSON.stringify({
+        rockets: state.rockets,
+        meteors: state.meteors,
+        nextRocketId: state.nextRocketId,
+        nextMeteorId: state.nextMeteorId
+      }));
+      showStatus("Saved! Changes will appear in the game.", "saved");
+    }
+
+    function saveSquaresToStorage() {
+      localStorage.setItem("spacerace-squares", JSON.stringify(customSquares));
+      showStatus("Square saved! Changes will appear in the game.", "saved");
+    }
+
+    // Override refreshConnections to also persist
+    const originalRefresh = refreshConnections;
+    refreshConnections = function() {
+      originalRefresh();
+      saveConnectionsToStorage();
+    };
+
+    // Load existing connections
+    try {
+      const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
+      if (saved) {
+        state.rockets = saved.rockets || [];
+        state.meteors = saved.meteors || [];
+        state.nextRocketId = saved.nextRocketId || 1;
+        state.nextMeteorId = saved.nextMeteorId || 1;
+        drawConnections();
+        renderConnectionsList();
+      }
+    } catch (e) {}
+
+    // Clear all connections
+    document.getElementById("clear-all-btn").addEventListener("click", () => {
+      if (confirm("Remove all rockets and meteors?")) {
+        state.rockets = [];
+        state.meteors = [];
+        state.nextRocketId = 1;
+        state.nextMeteorId = 1;
+        refreshConnections();
+      }
+    });
+
+    // ── Square Editor ──
+
+    const sqEditor = document.getElementById("sq-editor");
+    const sqNoSelection = document.getElementById("sq-no-selection");
+    const sqNumBadge = document.getElementById("sq-num-badge");
+    const sqCountry = document.getElementById("sq-country");
+    const sqSentiment = document.getElementById("sq-sentiment");
+    const sqYear = document.getElementById("sq-year");
+    const sqTitle = document.getElementById("sq-title");
+    const sqDesc = document.getElementById("sq-desc");
+    const sqAction = document.getElementById("sq-action");
+
+    // Make board cells clickable
+    document.querySelectorAll(".cell").forEach(cell => {
+      cell.addEventListener("click", () => {
+        const sq = parseInt(cell.dataset.square);
+        if (sq === 1 || sq === 100) return;
+        selectSquare(sq);
+      });
+    });
+
+    function selectSquare(sq) {
+      document.querySelectorAll(".cell.selected-cell").forEach(c => c.classList.remove("selected-cell"));
+      const cell = document.querySelector(`.cell[data-square="${sq}"]`);
+      if (cell) cell.classList.add("selected-cell");
+
+      selectedSquare = sq;
+      sqNoSelection.style.display = "none";
+      sqEditor.style.display = "block";
+      sqNumBadge.textContent = "#" + sq;
+
+      const data = getSquareData(sq);
+      sqCountry.value = (data && data.country) || "";
+      sqSentiment.value = (data && data.sentiment) || "good";
+      sqYear.value = (data && data.year) || "";
+      sqTitle.value = (data && data.title) || "";
+      sqDesc.value = (data && data.desc) || "";
+      sqAction.value = (data && data.action) || "";
+    }
+
+    // Save square
+    document.getElementById("sq-save-btn").addEventListener("click", () => {
+      if (!selectedSquare) return;
+
+      const country = sqCountry.value;
+      const sentiment = sqSentiment.value;
+      const year = sqYear.value.trim();
+      const title = sqTitle.value.trim();
+      const desc = sqDesc.value.trim();
+      const action = parseInt(sqAction.value) || 0;
+
+      if (!country && !year && !title && !desc && !action) {
+        delete customSquares[selectedSquare];
+      } else {
+        customSquares[selectedSquare] = {
+          square: selectedSquare,
+          country: country || "",
+          sentiment: country ? sentiment : "",
+          year: year,
+          date: year,
+          title: title,
+          desc: desc,
+          action: action
+        };
+      }
+
+      saveSquaresToStorage();
+      buildBoard();
+      drawConnections();
+
+      // Re-attach click handlers
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.addEventListener("click", () => {
+          const sq = parseInt(cell.dataset.square);
+          if (sq === 1 || sq === 100) return;
+          selectSquare(sq);
+        });
+      });
+
+      selectSquare(selectedSquare);
+    });
+
+    // Reset square to default
+    document.getElementById("sq-clear-btn").addEventListener("click", () => {
+      if (!selectedSquare) return;
+      delete customSquares[selectedSquare];
+      saveSquaresToStorage();
+      buildBoard();
+      drawConnections();
+
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.addEventListener("click", () => {
+          const sq = parseInt(cell.dataset.square);
+          if (sq === 1 || sq === 100) return;
+          selectSquare(sq);
+        });
+      });
+
+      selectSquare(selectedSquare);
+    });
+  </script>
+</body>
+</html>

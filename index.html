@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space Race: Snakes &amp; Ladders</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="stars"></div>
+  <div id="stars2"></div>
+
+  <header>
+    <h1>SPACE RACE <span class="heading-sub">- Rockets and Meteors</span></h1>
+  </header>
+
+  <main class="game-container">
+    <div class="board-wrapper">
+      <div class="board-container">
+        <div id="board" class="board-grid"></div>
+        <canvas id="connections-canvas"></canvas>
+        <div id="player-tokens"></div>
+      </div>
+    </div>
+
+    <aside class="side-panel">
+      <section class="dice-section">
+        <h2>MISSION CONTROL</h2>
+        <div class="current-turn">
+          <span id="turn-indicator" class="turn-ussr">USSR's Turn</span>
+        </div>
+        <div class="dice-area">
+          <div id="dice" class="dice">?</div>
+          <button id="roll-btn" class="btn btn-roll">LAUNCH DICE</button>
+        </div>
+        <div class="player-status">
+          <div class="player-card ussr-card">
+            <span class="player-name">USSR</span>
+            <span class="player-pos" id="ussr-pos">Square: 1</span>
+          </div>
+          <div class="player-card usa-card">
+            <span class="player-name">USA</span>
+            <span class="player-pos" id="usa-pos">Square: 1</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hidden elements for game.js compatibility -->
+      <div style="display:none;">
+        <button class="tab-btn active" data-tab="rocket"></button>
+        <button class="tab-btn" data-tab="meteor"></button>
+        <div id="rocket-form"></div>
+        <div id="meteor-form" class="hidden"></div>
+        <input id="rocket-from"><input id="rocket-to">
+        <input id="meteor-from"><input id="meteor-to">
+        <button id="add-rocket-btn"></button>
+        <button id="add-meteor-btn"></button>
+        <div id="connections-list-content"></div>
+      </div>
+
+      <section class="legend-section">
+        <h2>LEGEND</h2>
+        <div class="legend-items">
+          <div class="legend-item"><span class="legend-swatch swatch-ussr-good"></span> USSR Achievement</div>
+          <div class="legend-item"><span class="legend-swatch swatch-ussr-bad"></span> USSR Setback</div>
+          <div class="legend-item"><span class="legend-swatch swatch-usa-good"></span> USA Achievement</div>
+          <div class="legend-item"><span class="legend-swatch swatch-usa-bad"></span> USA Setback</div>
+          <div class="legend-item"><span class="legend-swatch swatch-neutral"></span> Neutral Square</div>
+        </div>
+      </section>
+
+      <button id="reset-btn" class="btn btn-reset">NEW GAME</button>
+    </aside>
+  </main>
+
+  <div id="tooltip" class="tooltip hidden"></div>
+  <div id="winner-overlay" class="winner-overlay hidden">
+    <div class="winner-content">
+      <h2 id="winner-text"></h2>
+      <p id="winner-sub"></p>
+      <button class="btn btn-roll" onclick="game.reset()">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Space Race — Game Tests</title>
+  <style>
+    body { font-family: monospace; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+    .pass { color: #2ecc71; }
+    .fail { color: #e74c3c; font-weight: bold; }
+    h1 { color: #ffcc00; }
+    .summary { margin-top: 20px; padding: 12px; border: 1px solid #444; border-radius: 6px; }
+    pre { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <h1>Space Race: Snakes &amp; Ladders — Test Suite</h1>
+  <div id="results"></div>
+  <div id="summary" class="summary"></div>
+
+  <div id="board" class="board-grid" style="display:grid; grid-template-columns:repeat(10,1fr); width:500px; height:500px; position:absolute; left:-9999px;">
+  </div>
+  <canvas id="connections-canvas" style="position:absolute; left:-9999px;"></canvas>
+  <div id="player-tokens" style="position:absolute; left:-9999px;"></div>
+  <div id="tooltip" class="tooltip hidden" style="position:absolute; left:-9999px;"></div>
+  <div id="winner-overlay" class="winner-overlay hidden" style="position:absolute; left:-9999px;">
+    <div class="winner-content">
+      <h2 id="winner-text"></h2>
+      <p id="winner-sub"></p>
+    </div>
+  </div>
+  <div id="turn-indicator" style="display:none;"></div>
+  <div id="ussr-pos" style="display:none;"></div>
+  <div id="usa-pos" style="display:none;"></div>
+  <div id="dice" style="display:none;"></div>
+  <button id="roll-btn" style="display:none;"></button>
+  <button id="reset-btn" style="display:none;"></button>
+  <div class="dice-section" style="display:none;"></div>
+  <div id="connections-list-content" style="display:none;"></div>
+
+  <div class="control-tabs" style="display:none;">
+    <button class="tab-btn active" data-tab="rocket"></button>
+    <button class="tab-btn" data-tab="meteor"></button>
+  </div>
+  <div id="rocket-form" style="display:none;"></div>
+  <div id="meteor-form" class="hidden" style="display:none;"></div>
+  <input id="rocket-from" style="display:none;">
+  <input id="rocket-to" style="display:none;">
+  <input id="meteor-from" style="display:none;">
+  <input id="meteor-to" style="display:none;">
+  <button id="add-rocket-btn" style="display:none;"></button>
+  <button id="add-meteor-btn" style="display:none;"></button>
+
+  <script src="game.js"></script>
+  <script>
+    const results = document.getElementById("results");
+    let passed = 0;
+    let failed = 0;
+
+    function assert(condition, testName) {
+      if (condition) {
+        passed++;
+        results.innerHTML += `<div class="pass">✓ ${testName}</div>`;
+      } else {
+        failed++;
+        results.innerHTML += `<div class="fail">✗ ${testName}</div>`;
+      }
+    }
+
+    function assertEqual(actual, expected, testName) {
+      if (actual === expected) {
+        passed++;
+        results.innerHTML += `<div class="pass">✓ ${testName}</div>`;
+      } else {
+        failed++;
+        results.innerHTML += `<div class="fail">✗ ${testName} — expected: ${expected}, got: ${actual}</div>`;
+      }
+    }
+
+    // ── Test: squareToGridPos ──
+    (function() {
+      let pos;
+      pos = squareToGridPos(1);
+      assertEqual(pos.gridRow, 9, "Square 1 → gridRow 9");
+      assertEqual(pos.col, 0, "Square 1 → col 0");
+
+      pos = squareToGridPos(10);
+      assertEqual(pos.gridRow, 9, "Square 10 → gridRow 9");
+      assertEqual(pos.col, 9, "Square 10 → col 9");
+
+      pos = squareToGridPos(11);
+      assertEqual(pos.gridRow, 8, "Square 11 → gridRow 8");
+      assertEqual(pos.col, 9, "Square 11 → col 9 (right-to-left row)");
+
+      pos = squareToGridPos(20);
+      assertEqual(pos.gridRow, 8, "Square 20 → gridRow 8");
+      assertEqual(pos.col, 0, "Square 20 → col 0 (right-to-left row)");
+
+      pos = squareToGridPos(100);
+      assertEqual(pos.gridRow, 0, "Square 100 → gridRow 0");
+      assertEqual(pos.col, 0, "Square 100 → col 0");
+
+      pos = squareToGridPos(91);
+      assertEqual(pos.gridRow, 0, "Square 91 → gridRow 0");
+      assertEqual(pos.col, 9, "Square 91 → col 9");
+
+      pos = squareToGridPos(50);
+      assertEqual(pos.gridRow, 5, "Square 50 → gridRow 5");
+      assertEqual(pos.col, 9, "Square 50 → col 9");
+    })();
+
+    // ── Test: gridPosToSquare (inverse) ──
+    (function() {
+      for (let n = 1; n <= 100; n++) {
+        const { gridRow, col } = squareToGridPos(n);
+        const back = gridPosToSquare(gridRow, col);
+        if (back !== n) {
+          failed++;
+          results.innerHTML += `<div class="fail">✗ roundtrip square ${n}: gridPos(${gridRow},${col}) → ${back}</div>`;
+          return;
+        }
+      }
+      passed++;
+      results.innerHTML += `<div class="pass">✓ squareToGridPos ↔ gridPosToSquare roundtrip (all 100 squares)</div>`;
+    })();
+
+    // ── Test: Event data ──
+    (function() {
+      assertEqual(SPACE_EVENTS.length, 33, "33 space events loaded");
+
+      const countries = new Set(SPACE_EVENTS.map(e => e.country));
+      assert(countries.has("ussr"), "Events include USSR");
+      assert(countries.has("usa"), "Events include USA");
+      assertEqual(countries.size, 2, "Only 2 countries: USSR and USA");
+
+      const ussrEvents = SPACE_EVENTS.filter(e => e.country === "ussr");
+      const usaEvents = SPACE_EVENTS.filter(e => e.country === "usa");
+      assert(ussrEvents.length > 0, `USSR has ${ussrEvents.length} events`);
+      assert(usaEvents.length > 0, `USA has ${usaEvents.length} events`);
+
+      const badUssr = SPACE_EVENTS.filter(e => e.country === "ussr" && e.sentiment === "bad");
+      const badUsa = SPACE_EVENTS.filter(e => e.country === "usa" && e.sentiment === "bad");
+      assertEqual(badUssr.length, 3, "3 USSR setback events (Korolev death, Komarov, N1)");
+      assertEqual(badUsa.length, 1, "1 USA setback event (Apollo 1 fire)");
+
+      assertEqual(eventMap[3].title, "Sputnik 1", "eventMap[3] = Sputnik 1");
+      assertEqual(eventMap[100].title, "Apollo 11 — Moon Landing!", "eventMap[100] = Apollo 11");
+      assertEqual(eventMap[42].title, "Yuri Gagarin — First Human in Space", "eventMap[42] = Gagarin");
+    })();
+
+    // ── Test: Event squares are valid ──
+    (function() {
+      const squares = SPACE_EVENTS.map(e => e.square);
+      const uniqueSquares = new Set(squares);
+      assertEqual(squares.length, uniqueSquares.size, "All event squares are unique");
+
+      const allValid = squares.every(s => s >= 1 && s <= 100);
+      assert(allValid, "All event squares between 1 and 100");
+
+      const sorted = [...squares].sort((a, b) => a - b);
+      const isSorted = squares.every((s, i) => i === 0 || squares[i] >= squares[i - 1]);
+      assert(isSorted, "Events are in chronological (ascending square) order");
+    })();
+
+    // ── Test: Board generation ──
+    (function() {
+      const board = document.getElementById("board");
+      const cells = board.querySelectorAll(".cell");
+      assertEqual(cells.length, 100, "Board has 100 cells");
+
+      const squareNums = Array.from(cells).map(c => parseInt(c.dataset.square));
+      const uniqueNums = new Set(squareNums);
+      assertEqual(uniqueNums.size, 100, "All 100 unique square numbers present");
+
+      const min = Math.min(...squareNums);
+      const max = Math.max(...squareNums);
+      assertEqual(min, 1, "Minimum square is 1");
+      assertEqual(max, 100, "Maximum square is 100");
+    })();
+
+    // ── Test: Cell classes ──
+    (function() {
+      const cell3 = document.querySelector('.cell[data-square="3"]');
+      assert(cell3.classList.contains("cell-ussr-good"), "Square 3 (Sputnik 1) has cell-ussr-good class");
+
+      const cell81 = document.querySelector('.cell[data-square="81"]');
+      assert(cell81.classList.contains("cell-usa-bad"), "Square 81 (Apollo 1 Fire) has cell-usa-bad class");
+
+      const cell75 = document.querySelector('.cell[data-square="75"]');
+      assert(cell75.classList.contains("cell-ussr-bad"), "Square 75 (Korolev death) has cell-ussr-bad class");
+
+      const cell9 = document.querySelector('.cell[data-square="9"]');
+      assert(cell9.classList.contains("cell-usa-good"), "Square 9 (Explorer 1) has cell-usa-good class");
+
+      const cell5 = document.querySelector('.cell[data-square="5"]');
+      assert(cell5.classList.contains("cell-neutral"), "Square 5 (no event) has cell-neutral class");
+
+      const cell1 = document.querySelector('.cell[data-square="1"]');
+      assert(cell1.classList.contains("cell-start"), "Square 1 has cell-start class");
+
+      const cell100 = document.querySelector('.cell[data-square="100"]');
+      assert(cell100.classList.contains("cell-finish"), "Square 100 has cell-finish class");
+    })();
+
+    // ── Test: Initial game state ──
+    (function() {
+      assertEqual(state.players.ussr.pos, 1, "USSR starts at square 1");
+      assertEqual(state.players.usa.pos, 1, "USA starts at square 1");
+      assertEqual(state.currentPlayer, "ussr", "USSR goes first");
+      assertEqual(state.gameOver, false, "Game is not over at start");
+      assertEqual(state.rolling, false, "Not rolling at start");
+      assertEqual(state.rockets.length, 0, "No rockets placed initially");
+      assertEqual(state.meteors.length, 0, "No meteors placed initially");
+    })();
+
+    // ── Test: validateConnection ──
+    (function() {
+      // Suppress alerts during testing
+      const origAlert = window.alert;
+      let lastAlert = "";
+      window.alert = (msg) => { lastAlert = msg; };
+
+      assert(validateConnection(5, 50, "rocket") === true, "Valid rocket: 5 → 50");
+      assert(validateConnection(50, 5, "meteor") === true, "Valid meteor: 50 → 5");
+
+      assert(validateConnection(NaN, 50, "rocket") === false, "Invalid: NaN from");
+      assert(validateConnection(5, NaN, "rocket") === false, "Invalid: NaN to");
+      assert(validateConnection(1, 50, "rocket") === false, "Invalid: from=1 (must be ≥2)");
+      assert(validateConnection(5, 100, "rocket") === false, "Invalid: to=100 (must be ≤99)");
+      assert(validateConnection(50, 50, "rocket") === false, "Invalid: same square");
+      assert(validateConnection(50, 5, "rocket") === false, "Invalid rocket: end < start");
+      assert(validateConnection(5, 50, "meteor") === false, "Invalid meteor: end > start");
+
+      // Add a rocket and check duplicate prevention
+      state.rockets.push({ id: 999, from: 5, to: 50 });
+      assert(validateConnection(5, 60, "rocket") === false, "Duplicate from-square blocked");
+      state.rockets = state.rockets.filter(r => r.id !== 999);
+
+      window.alert = origAlert;
+    })();
+
+    // ── Test: switchTurn ──
+    (function() {
+      state.currentPlayer = "ussr";
+      switchTurn();
+      assertEqual(state.currentPlayer, "usa", "Turn switches from USSR to USA");
+      switchTurn();
+      assertEqual(state.currentPlayer, "ussr", "Turn switches back from USA to USSR");
+    })();
+
+    // ── Test: Player tokens exist ──
+    (function() {
+      const ussrToken = document.getElementById("token-ussr");
+      const usaToken = document.getElementById("token-usa");
+      assert(ussrToken !== null, "USSR token element exists");
+      assert(usaToken !== null, "USA token element exists");
+      assert(ussrToken.classList.contains("token-ussr"), "USSR token has correct class");
+      assert(usaToken.classList.contains("token-usa"), "USA token has correct class");
+    })();
+
+    // ── Test: Connection list rendering ──
+    (function() {
+      state.rockets = [];
+      state.meteors = [];
+      renderConnectionsList();
+      const content = document.getElementById("connections-list-content");
+      assert(content.innerHTML.includes("No rockets or meteors"), "Empty state message shown");
+
+      state.rockets.push({ id: 1, from: 10, to: 40 });
+      state.meteors.push({ id: 1, from: 80, to: 20 });
+      renderConnectionsList();
+      assert(content.innerHTML.includes("Sq 10"), "Rocket connection shown");
+      assert(content.innerHTML.includes("Sq 80"), "Meteor connection shown");
+      assert(content.querySelectorAll(".rocket-item").length === 1, "1 rocket item in list");
+      assert(content.querySelectorAll(".meteor-item").length === 1, "1 meteor item in list");
+
+      // Cleanup
+      state.rockets = [];
+      state.meteors = [];
+      renderConnectionsList();
+    })();
+
+    // ── Test: Reset ──
+    (function() {
+      state.players.ussr.pos = 55;
+      state.players.usa.pos = 77;
+      state.currentPlayer = "usa";
+      state.gameOver = true;
+      game.reset();
+      assertEqual(state.players.ussr.pos, 1, "Reset: USSR back to 1");
+      assertEqual(state.players.usa.pos, 1, "Reset: USA back to 1");
+      assertEqual(state.currentPlayer, "ussr", "Reset: USSR goes first");
+      assertEqual(state.gameOver, false, "Reset: game not over");
+    })();
+
+    // ── Summary ──
+    const summaryEl = document.getElementById("summary");
+    const total = passed + failed;
+    if (failed === 0) {
+      summaryEl.innerHTML = `<span class="pass">ALL ${total} TESTS PASSED ✓</span>`;
+    } else {
+      summaryEl.innerHTML = `<span class="fail">${failed} FAILED</span> / <span class="pass">${passed} passed</span> (${total} total)`;
+    }
+  </script>
+</body>
+</html>
