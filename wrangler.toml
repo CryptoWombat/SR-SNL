@@ -1,0 +1,6 @@
+name = "sr-snl"
+pages_build_output_dir = "."
+
+[[kv_namespaces]]
+binding = "GAME_CONFIG"
+id = "b847c140935146df88152db33622c93d"

@@ -487,6 +487,7 @@
       const hash = await sha256(pw);
       if (hash === PASS_HASH) {
         sessionStorage.setItem("admin_auth", "1");
+        sessionStorage.setItem("admin_pw", pw);
         revealAdmin();
       } else {
         document.getElementById("auth-error").textContent = "Incorrect password";
@@ -528,19 +529,33 @@
       }
     }
 
-    function saveConnectionsToStorage() {
-      localStorage.setItem("spacerace-connections", JSON.stringify({
+    async function pushConfigToAPI() {
+      const pw = sessionStorage.getItem("admin_pw");
+      if (!pw) { showStatus("Session expired — please reload and re-enter password.", "info"); return; }
+      const payload = {
         rockets: state.rockets,
         meteors: state.meteors,
-        nextRocketId: state.nextRocketId,
-        nextMeteorId: state.nextMeteorId
-      }));
-      showStatus("Saved! Changes will appear in the game.", "saved");
+        customSquares: customSquares
+      };
+      try {
+        const res = await fetch("/api/config", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", "X-Admin-Password": pw },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(res.status);
+        showStatus("Saved! Changes are live for all players.", "saved");
+      } catch (e) {
+        showStatus("Save failed (" + e.message + "). Try again.", "info");
+      }
+    }
+
+    function saveConnectionsToStorage() {
+      pushConfigToAPI();
     }
 
     function saveSquaresToStorage() {
-      localStorage.setItem("spacerace-squares", JSON.stringify(customSquares));
-      showStatus("Square saved! Changes will appear in the game.", "saved");
+      pushConfigToAPI();
     }
 
     // Override refreshConnections to also persist
@@ -550,18 +565,38 @@
       saveConnectionsToStorage();
     };
 
-    // Load existing connections
-    try {
-      const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
-      if (saved) {
-        state.rockets = saved.rockets || [];
-        state.meteors = saved.meteors || [];
-        state.nextRocketId = saved.nextRocketId || 1;
-        state.nextMeteorId = saved.nextMeteorId || 1;
-        drawConnections();
-        renderConnectionsList();
+    // Load existing config from API (fallback to localStorage)
+    (async function loadAdminConfig() {
+      try {
+        const res = await fetch("/api/config");
+        if (!res.ok) throw new Error(res.status);
+        const cfg = await res.json();
+        if (cfg.rockets) state.rockets = cfg.rockets;
+        if (cfg.meteors) state.meteors = cfg.meteors;
+        if (cfg.customSquares) customSquares = cfg.customSquares;
+      } catch (e) {
+        try {
+          const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
+          if (saved) {
+            state.rockets = saved.rockets || [];
+            state.meteors = saved.meteors || [];
+            state.nextRocketId = saved.nextRocketId || 1;
+            state.nextMeteorId = saved.nextMeteorId || 1;
+          }
+        } catch (e2) {}
       }
-    } catch (e) {}
+      buildBoard();
+      drawConnections();
+      renderConnectionsList();
+
+      document.querySelectorAll(".cell").forEach(cell => {
+        cell.addEventListener("click", () => {
+          const sq = parseInt(cell.dataset.square);
+          if (sq === 1 || sq === 100) return;
+          selectSquare(sq);
+        });
+      });
+    })();
 
     // Clear all connections
     document.getElementById("clear-all-btn").addEventListener("click", () => {
@@ -585,15 +620,6 @@
     const sqTitle = document.getElementById("sq-title");
     const sqDesc = document.getElementById("sq-desc");
     const sqAction = document.getElementById("sq-action");
-
-    // Make board cells clickable
-    document.querySelectorAll(".cell").forEach(cell => {
-      cell.addEventListener("click", () => {
-        const sq = parseInt(cell.dataset.square);
-        if (sq === 1 || sq === 100) return;
-        selectSquare(sq);
-      });
-    });
 
     function selectSquare(sq) {
       document.querySelectorAll(".cell.selected-cell").forEach(c => c.classList.remove("selected-cell"));

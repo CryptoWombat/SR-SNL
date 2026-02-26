@@ -210,11 +210,37 @@ SPACE_EVENTS.forEach(e => { eventMap[e.square] = e; });
 
 let customSquares = {};
 
-function loadCustomSquares() {
+function loadCustomSquaresFromLocal() {
   try {
     const saved = JSON.parse(localStorage.getItem("spacerace-squares"));
     if (saved) customSquares = saved;
   } catch (e) {}
+}
+
+function loadConnectionsFromLocal() {
+  try {
+    const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
+    if (saved) {
+      state.rockets = saved.rockets || [];
+      state.meteors = saved.meteors || [];
+      state.nextRocketId = saved.nextRocketId || 1;
+      state.nextMeteorId = saved.nextMeteorId || 1;
+    }
+  } catch (e) {}
+}
+
+async function loadConfigFromAPI() {
+  try {
+    const res = await fetch("/api/config");
+    if (!res.ok) throw new Error(res.status);
+    const cfg = await res.json();
+    if (cfg.rockets) state.rockets = cfg.rockets;
+    if (cfg.meteors) state.meteors = cfg.meteors;
+    if (cfg.customSquares) customSquares = cfg.customSquares;
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 function getSquareData(n) {
@@ -1030,22 +1056,18 @@ const game = {
 // ── Initialize ────────────────────────────────────────────────────────
 
 function loadConnectionsFromStorage() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
-    if (saved) {
-      state.rockets = saved.rockets || [];
-      state.meteors = saved.meteors || [];
-      state.nextRocketId = saved.nextRocketId || 1;
-      state.nextMeteorId = saved.nextMeteorId || 1;
-    }
-  } catch (e) {}
+  loadConnectionsFromLocal();
 }
 
-function init() {
-  loadCustomSquares();
+async function init() {
+  const apiOk = await loadConfigFromAPI();
+  if (!apiOk) {
+    loadCustomSquaresFromLocal();
+    loadConnectionsFromLocal();
+  }
+
   buildBoard();
   ensureMessageEl();
-  loadConnectionsFromStorage();
   createTokens();
   drawConnections();
   renderConnectionsList();

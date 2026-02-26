@@ -21,6 +21,10 @@ window.HTMLElement.prototype.getBoundingClientRect = function() {
   return { width: 500, height: 500, top: 0, left: 0, right: 500, bottom: 500, x: 0, y: 0 };
 };
 
+window.fetch = function() {
+  return Promise.reject(new Error("no network in tests"));
+};
+
 window.HTMLCanvasElement.prototype.getContext = function() {
   return {
     clearRect() {}, beginPath() {}, moveTo() {}, bezierCurveTo() {},
@@ -46,7 +50,11 @@ const wrappedJS = gameJS
   .replace("const state", "window.state")
   .replace("const game =", "window.game =");
 
-window.eval(wrappedJS);
+const initWrapped = wrappedJS.replace("init();", "window._initPromise = init();");
+window.eval(initWrapped);
+
+(async () => {
+await window._initPromise;
 
 const squareToGridPos = window.squareToGridPos;
 const gridPosToSquare = window.gridPosToSquare;
@@ -290,3 +298,5 @@ if (failed === 0) {
   console.log(`\x1b[31m${failed} FAILED\x1b[0m / \x1b[32m${passed} passed\x1b[0m (${total} total)\n`);
   process.exit(1);
 }
+
+})();
