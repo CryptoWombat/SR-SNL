@@ -477,54 +477,133 @@ function drawRocket(ctx, from, to, boardEl) {
   path.moveTo(a.x, a.y);
   path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
 
-  // Exhaust trail (tapered: wide at bottom, narrow at top)
-  const trailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  trailGrad.addColorStop(0, "rgba(255, 100, 0, 0.9)");
-  trailGrad.addColorStop(0.5, "rgba(255, 180, 0, 0.5)");
-  trailGrad.addColorStop(1, "rgba(255, 220, 150, 0.1)");
-  ctx.strokeStyle = trailGrad;
-  ctx.lineWidth = 14;
+  // Exhaust trail: stylized flame (yellow core → orange edges) along full path
+  ctx.strokeStyle = "rgba(241, 196, 15, 0.35)";
+  ctx.lineWidth = 20;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.stroke(path);
+  const trailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+  trailGrad.addColorStop(0, "#f1c40f");
+  trailGrad.addColorStop(0.3, "#e67e22");
+  trailGrad.addColorStop(0.7, "#d35400");
+  trailGrad.addColorStop(1, "rgba(230, 126, 34, 0.4)");
+  ctx.strokeStyle = trailGrad;
+  ctx.lineWidth = 12;
+  ctx.stroke(path);
 
-  // Rocket silhouette at destination (pointing up): nose, body, fins
-  const scale = 12;
+  // Rocket at destination (inspiration style: nose, band, body, porthole, fins, engine, nozzle, flame)
+  const scale = 14;
   const rx = b.x;
   const ry = b.y;
   ctx.translate(rx, ry);
-  ctx.scale(1, -1); // so nose points up in screen coords
+  ctx.scale(1, -1);
+
+  // Flame at rocket base (teardrop-style)
   ctx.beginPath();
-  ctx.moveTo(0, scale * 1.4);           // nose
-  ctx.lineTo(scale * 0.5, scale * 0.4);
-  ctx.lineTo(scale * 0.5, -scale * 0.6);
-  ctx.lineTo(scale * 0.7, -scale * 1.1); // fin
-  ctx.lineTo(scale * 0.5, -scale * 0.9);
-  ctx.lineTo(0, -scale * 1.3);          // base
-  ctx.lineTo(-scale * 0.5, -scale * 0.9);
-  ctx.lineTo(-scale * 0.7, -scale * 1.1);
-  ctx.lineTo(-scale * 0.5, -scale * 0.6);
-  ctx.lineTo(-scale * 0.5, scale * 0.4);
+  ctx.moveTo(0, -scale * 1.5);
+  ctx.lineTo(scale * 0.35, -scale * 1.1);
+  ctx.lineTo(scale * 0.25, -scale * 0.7);
+  ctx.lineTo(0, -scale * 0.9);
+  ctx.lineTo(-scale * 0.25, -scale * 0.7);
+  ctx.lineTo(-scale * 0.35, -scale * 1.1);
   ctx.closePath();
-  const rocketGrad = ctx.createLinearGradient(0, -scale * 1.3, 0, scale * 1.4);
-  rocketGrad.addColorStop(0, "#ff6600");
-  rocketGrad.addColorStop(0.4, "#ffaa00");
-  rocketGrad.addColorStop(0.8, "#cccccc");
-  rocketGrad.addColorStop(1, "#ffffff");
-  ctx.fillStyle = rocketGrad;
+  const flameGrad = ctx.createLinearGradient(0, -scale * 1.5, 0, -scale * 0.6);
+  flameGrad.addColorStop(0, "#f1c40f");
+  flameGrad.addColorStop(0.6, "#e67e22");
+  flameGrad.addColorStop(1, "#c0392b");
+  ctx.fillStyle = flameGrad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(255,255,255,0.6)";
+
+  // Engine / nozzle (red-orange)
+  ctx.fillStyle = "#e74c3c";
+  ctx.fillRect(-scale * 0.35, -scale * 1.35, scale * 0.7, scale * 0.25);
+  ctx.strokeStyle = "#c0392b";
+  ctx.lineWidth = 1;
+  ctx.strokeRect(-scale * 0.35, -scale * 1.35, scale * 0.7, scale * 0.25);
+
+  // Main body (light cyan, rounded corners)
+  const bw = scale * 0.64;
+  const bh = scale * 0.85;
+  const bx = -scale * 0.32;
+  const by = -scale * 1.1;
+  const r = 2;
+  ctx.beginPath();
+  ctx.moveTo(bx + r, by);
+  ctx.lineTo(bx + bw - r, by);
+  ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
+  ctx.lineTo(bx + bw, by + bh - r);
+  ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
+  ctx.lineTo(bx + r, by + bh);
+  ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
+  ctx.lineTo(bx, by + r);
+  ctx.quadraticCurveTo(bx, by, bx + r, by);
+  ctx.closePath();
+  ctx.fillStyle = "#7ec8e3";
+  ctx.fill();
+  ctx.strokeStyle = "#5dade2";
   ctx.lineWidth = 1;
   ctx.stroke();
+  // Highlight on body
+  ctx.fillStyle = "rgba(255,255,255,0.25)";
+  ctx.fillRect(-scale * 0.28, -scale * 0.9, scale * 0.2, scale * 0.6);
+
+  // Porthole
+  ctx.fillStyle = "#2c3e50";
+  ctx.beginPath();
+  ctx.arc(0, -scale * 0.35, scale * 0.18, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "#3498db";
+  ctx.beginPath();
+  ctx.arc(0, -scale * 0.35, scale * 0.12, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = "rgba(255,255,255,0.5)";
+  ctx.beginPath();
+  ctx.arc(-scale * 0.04, -scale * 0.38, scale * 0.04, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Red-orange band below nose
+  ctx.fillStyle = "#e67e22";
+  ctx.fillRect(-scale * 0.33, scale * 0.5, scale * 0.66, scale * 0.12);
+
+  // Nose cone (dark blue-grey)
+  ctx.beginPath();
+  ctx.moveTo(0, scale * 1.2);
+  ctx.lineTo(scale * 0.33, scale * 0.5);
+  ctx.lineTo(-scale * 0.33, scale * 0.5);
+  ctx.closePath();
+  ctx.fillStyle = "#2c3e50";
+  ctx.fill();
+  ctx.strokeStyle = "#34495e";
+  ctx.stroke();
+
+  // Fins (dark blue-grey, triangular)
+  ctx.fillStyle = "#2c3e50";
+  ctx.strokeStyle = "#34495e";
+  ctx.beginPath();
+  ctx.moveTo(-scale * 0.32, -scale * 0.9);
+  ctx.lineTo(-scale * 0.6, -scale * 1.25);
+  ctx.lineTo(-scale * 0.32, -scale * 1.05);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(scale * 0.32, -scale * 0.9);
+  ctx.lineTo(scale * 0.6, -scale * 1.25);
+  ctx.lineTo(scale * 0.32, -scale * 1.05);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
   ctx.setTransform(1, 0, 0, 1, 0, 0);
 
   // Launch pad at start
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "#ff6600";
+  ctx.arc(a.x, a.y, 7, 0, Math.PI * 2);
+  ctx.fillStyle = "#34495e";
   ctx.fill();
-  ctx.strokeStyle = "#ff9933";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "#2c3e50";
+  ctx.lineWidth = 2;
   ctx.stroke();
 
   ctx.restore();
@@ -542,45 +621,114 @@ function drawMeteor(ctx, from, to, boardEl) {
 
   ctx.save();
 
-  const path = new Path2D();
-  path.moveTo(a.x, a.y);
-  path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
+  // Sample curve for trail points
+  const curve = (t) => {
+    const mt = 1 - t;
+    const mt2 = mt * mt, mt3 = mt2 * mt;
+    const t2 = t * t, t3 = t2 * t;
+    return {
+      x: mt3 * a.x + 3 * mt2 * t * cp1x + 3 * mt * t2 * cp2x + t3 * b.x,
+      y: mt3 * a.y + 3 * mt2 * t * cp1y + 3 * mt * t2 * cp2y + t3 * b.y
+    };
+  };
 
-  // Meteor tail: thick stroke from head to impact (bright near head, fades at impact)
-  const tailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  tailGrad.addColorStop(0, "#ffdd88");
-  tailGrad.addColorStop(0.2, "#ff9900");
-  tailGrad.addColorStop(0.5, "#ff4400");
-  tailGrad.addColorStop(0.85, "#aa2200");
-  tailGrad.addColorStop(1, "rgba(80, 10, 0, 0.3)");
-  ctx.strokeStyle = tailGrad;
-  ctx.lineWidth = 22;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.stroke(path);
+  // Layered flame trail (inspiration: tongues of fire, yellow → orange → red)
+  const pts = [];
+  for (let t = 0; t <= 1; t += 0.02) pts.push(curve(t));
+  const dx = b.x - a.x, dy = b.y - a.y;
+  const perp = Math.sqrt(dx * dx + dy * dy) || 1;
+  let nx = -dy / perp, ny = dx / perp;
 
-  // Meteor head: bright round ball at start (the actual meteor)
+  // Outer glow
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 14, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 180, 80, 0.4)";
+  for (let i = 0; i < pts.length; i++) {
+    const w = 18 * (1 - i / pts.length * 0.85);
+    const p = pts[i];
+    const x = p.x + nx * w, y = p.y + ny * w;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const w = 18 * (1 - i / pts.length * 0.85);
+    const p = pts[i];
+    ctx.lineTo(p.x - nx * w, p.y - ny * w);
+  }
+  ctx.closePath();
+  const glowGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+  glowGrad.addColorStop(0, "rgba(241, 196, 15, 0.15)");
+  glowGrad.addColorStop(0.3, "rgba(230, 126, 34, 0.2)");
+  glowGrad.addColorStop(0.7, "rgba(192, 57, 43, 0.25)");
+  glowGrad.addColorStop(1, "rgba(128, 0, 0, 0.1)");
+  ctx.fillStyle = glowGrad;
   ctx.fill();
+
+  // Main trail with wavy edge (flame tongues)
+  ctx.beginPath();
+  for (let i = 0; i < pts.length; i++) {
+    const t = i / pts.length;
+    const w = (12 + Math.sin(i * 0.5) * 2) * (1 - t * 0.9);
+    const p = pts[i];
+    const x = p.x + nx * w, y = p.y + ny * w;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const t = i / pts.length;
+    const w = (12 + Math.sin(i * 0.5 + 2) * 2) * (1 - t * 0.9);
+    const p = pts[i];
+    ctx.lineTo(p.x - nx * w, p.y - ny * w);
+  }
+  ctx.closePath();
+  const tailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+  tailGrad.addColorStop(0, "#f1c40f");
+  tailGrad.addColorStop(0.12, "#e67e22");
+  tailGrad.addColorStop(0.4, "#d35400");
+  tailGrad.addColorStop(0.75, "#c0392b");
+  tailGrad.addColorStop(1, "rgba(100, 20, 0, 0.6)");
+  ctx.fillStyle = tailGrad;
+  ctx.fill();
+
+  // Rocky meteor body (dark blue/purple, chunky)
   ctx.beginPath();
   ctx.arc(a.x, a.y, 10, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffcc66";
+  ctx.fillStyle = "#2c3e50";
+  ctx.fill();
+  ctx.strokeStyle = "#1a252f";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#3d5a80";
+  ctx.fill();
+  // Pitted texture (lighter spots)
+  ctx.fillStyle = "rgba(90, 120, 160, 0.7)";
+  ctx.beginPath();
+  ctx.arc(a.x - 3, a.y - 1, 2, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffffff";
+  ctx.arc(a.x + 4, a.y + 2, 1.5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(a.x + 1, a.y - 3, 1, 0, Math.PI * 2);
+  ctx.fill();
+  // Bright fiery aura around rock
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 13, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(241, 196, 15, 0.35)";
   ctx.fill();
 
-  // Impact crater / explosion at end
+  // Impact / explosion at end
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 12, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 60, 0, 0.4)";
+  ctx.arc(b.x, b.y, 14, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(230, 126, 34, 0.3)";
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "#ff3300";
+  ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#c0392b";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+  ctx.fillStyle = "#e74c3c";
   ctx.fill();
 
   ctx.restore();
