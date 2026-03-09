@@ -304,6 +304,41 @@ const state = {
 // Meteor: actual image (background removed), redraw when loaded
 let meteorImageCanvas = null;
 
+// Rocket: actual image (background removed). Body fixed size; only exhaust length scales with path.
+let rocketImageCanvas = null;
+const ROCKET_BODY_FRAC = 0.38;
+const ROCKET_BODY_W = 52;
+const ROCKET_BODY_H = 52;
+const ROCKET_EXHAUST_W = 44;
+
+function loadRocketImage() {
+  const img = new Image();
+  img.crossOrigin = "anonymous";
+  img.onload = function() {
+    const w = img.naturalWidth;
+    const h = img.naturalHeight;
+    const canvas = document.createElement("canvas");
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    const data = ctx.getImageData(0, 0, w, h);
+    const d = data.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const r = d[i], g = d[i + 1], b = d[i + 2];
+      const sum = r + g + b;
+      const isDarkBlue = (r < 110 && g < 110 && b > 60) || (sum < 140 && b > r && b > g);
+      const isVeryDark = sum < 90;
+      if (isDarkBlue || isVeryDark) d[i + 3] = 0;
+    }
+    ctx.putImageData(data, 0, 0);
+    rocketImageCanvas = canvas;
+    drawConnections();
+  };
+  img.onerror = function() { rocketImageCanvas = null; };
+  img.src = "assets/rocket.png";
+}
+
 function loadMeteorImage() {
   const img = new Image();
   img.crossOrigin = "anonymous";
@@ -538,142 +573,43 @@ function drawConnections() {
 }
 
 function drawRocket(ctx, from, to, boardEl) {
+  if (!rocketImageCanvas) return;
+  // Rockets go UP: "from" = lower square (launch), "to" = higher square (destination). Rocket at top (b), exhaust trails down to (a).
   const a = getSquareCenter(from, boardEl);
   const b = getSquareCenter(to, boardEl);
-
-  const cpOffset = (b.x - a.x) * 0.3 + 20;
-  const cp1x = a.x + cpOffset;
-  const cp1y = a.y - (a.y - b.y) * 0.3;
-  const cp2x = b.x - cpOffset;
-  const cp2y = b.y + (a.y - b.y) * 0.3;
+  const pathLen = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const w = rocketImageCanvas.width;
+  const h = rocketImageCanvas.height;
+  const bodyH = ROCKET_BODY_FRAC * h;
+  const exhaustH = h - bodyH;
+  const exhaustLen = Math.max(20, pathLen - ROCKET_BODY_H);
 
   ctx.save();
 
-  const path = new Path2D();
-  path.moveTo(a.x, a.y);
-  path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
+  // 1. Exhaust: from bottom of body (at b) down toward a. Length = pathLen - body (only exhaust length varies).
+  const angle = Math.atan2(a.y - b.y, a.x - b.x);
+  ctx.translate(b.x, b.y);
+  ctx.rotate(angle);
+  ctx.drawImage(
+    rocketImageCanvas,
+    0, bodyH, w, exhaustH,
+    -ROCKET_EXHAUST_W / 2, 0, ROCKET_EXHAUST_W, exhaustLen
+  );
+  ctx.restore();
 
-  // Exhaust trail: stylized flame (yellow core → orange edges) along full path
-  ctx.strokeStyle = "rgba(241, 196, 15, 0.35)";
-  ctx.lineWidth = 20;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.stroke(path);
-  const trailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  trailGrad.addColorStop(0, "#f1c40f");
-  trailGrad.addColorStop(0.3, "#e67e22");
-  trailGrad.addColorStop(0.7, "#d35400");
-  trailGrad.addColorStop(1, "rgba(230, 126, 34, 0.4)");
-  ctx.strokeStyle = trailGrad;
-  ctx.lineWidth = 12;
-  ctx.stroke(path);
+  ctx.save();
+  // 2. Body: fixed size, nose at b (rocket flies up so nose is at destination).
+  ctx.translate(b.x, b.y);
+  ctx.rotate(angle);
+  ctx.drawImage(
+    rocketImageCanvas,
+    0, 0, w, bodyH,
+    -ROCKET_BODY_W / 2, -ROCKET_BODY_H, ROCKET_BODY_W, ROCKET_BODY_H
+  );
+  ctx.restore();
 
-  // Rocket at destination (inspiration style: nose, band, body, porthole, fins, engine, nozzle, flame)
-  const scale = 14;
-  const rx = b.x;
-  const ry = b.y;
-  ctx.translate(rx, ry);
-  ctx.scale(1, -1);
-
-  // Flame at rocket base (teardrop-style)
-  ctx.beginPath();
-  ctx.moveTo(0, -scale * 1.5);
-  ctx.lineTo(scale * 0.35, -scale * 1.1);
-  ctx.lineTo(scale * 0.25, -scale * 0.7);
-  ctx.lineTo(0, -scale * 0.9);
-  ctx.lineTo(-scale * 0.25, -scale * 0.7);
-  ctx.lineTo(-scale * 0.35, -scale * 1.1);
-  ctx.closePath();
-  const flameGrad = ctx.createLinearGradient(0, -scale * 1.5, 0, -scale * 0.6);
-  flameGrad.addColorStop(0, "#f1c40f");
-  flameGrad.addColorStop(0.6, "#e67e22");
-  flameGrad.addColorStop(1, "#c0392b");
-  ctx.fillStyle = flameGrad;
-  ctx.fill();
-
-  // Engine / nozzle (red-orange)
-  ctx.fillStyle = "#e74c3c";
-  ctx.fillRect(-scale * 0.35, -scale * 1.35, scale * 0.7, scale * 0.25);
-  ctx.strokeStyle = "#c0392b";
-  ctx.lineWidth = 1;
-  ctx.strokeRect(-scale * 0.35, -scale * 1.35, scale * 0.7, scale * 0.25);
-
-  // Main body (light cyan, rounded corners)
-  const bw = scale * 0.64;
-  const bh = scale * 0.85;
-  const bx = -scale * 0.32;
-  const by = -scale * 1.1;
-  const r = 2;
-  ctx.beginPath();
-  ctx.moveTo(bx + r, by);
-  ctx.lineTo(bx + bw - r, by);
-  ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + r);
-  ctx.lineTo(bx + bw, by + bh - r);
-  ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - r, by + bh);
-  ctx.lineTo(bx + r, by + bh);
-  ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - r);
-  ctx.lineTo(bx, by + r);
-  ctx.quadraticCurveTo(bx, by, bx + r, by);
-  ctx.closePath();
-  ctx.fillStyle = "#7ec8e3";
-  ctx.fill();
-  ctx.strokeStyle = "#5dade2";
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  // Highlight on body
-  ctx.fillStyle = "rgba(255,255,255,0.25)";
-  ctx.fillRect(-scale * 0.28, -scale * 0.9, scale * 0.2, scale * 0.6);
-
-  // Porthole
-  ctx.fillStyle = "#2c3e50";
-  ctx.beginPath();
-  ctx.arc(0, -scale * 0.35, scale * 0.18, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "#3498db";
-  ctx.beginPath();
-  ctx.arc(0, -scale * 0.35, scale * 0.12, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.fillStyle = "rgba(255,255,255,0.5)";
-  ctx.beginPath();
-  ctx.arc(-scale * 0.04, -scale * 0.38, scale * 0.04, 0, Math.PI * 2);
-  ctx.fill();
-
-  // Red-orange band below nose
-  ctx.fillStyle = "#e67e22";
-  ctx.fillRect(-scale * 0.33, scale * 0.5, scale * 0.66, scale * 0.12);
-
-  // Nose cone (dark blue-grey)
-  ctx.beginPath();
-  ctx.moveTo(0, scale * 1.2);
-  ctx.lineTo(scale * 0.33, scale * 0.5);
-  ctx.lineTo(-scale * 0.33, scale * 0.5);
-  ctx.closePath();
-  ctx.fillStyle = "#2c3e50";
-  ctx.fill();
-  ctx.strokeStyle = "#34495e";
-  ctx.stroke();
-
-  // Fins (dark blue-grey, triangular)
-  ctx.fillStyle = "#2c3e50";
-  ctx.strokeStyle = "#34495e";
-  ctx.beginPath();
-  ctx.moveTo(-scale * 0.32, -scale * 0.9);
-  ctx.lineTo(-scale * 0.6, -scale * 1.25);
-  ctx.lineTo(-scale * 0.32, -scale * 1.05);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(scale * 0.32, -scale * 0.9);
-  ctx.lineTo(scale * 0.6, -scale * 1.25);
-  ctx.lineTo(scale * 0.32, -scale * 1.05);
-  ctx.closePath();
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.setTransform(1, 0, 0, 1, 0, 0);
-
-  // Launch pad at start
+  // 3. Launch pad at start (a)
+  ctx.save();
   ctx.beginPath();
   ctx.arc(a.x, a.y, 7, 0, Math.PI * 2);
   ctx.fillStyle = "#34495e";
@@ -681,7 +617,6 @@ function drawRocket(ctx, from, to, boardEl) {
   ctx.strokeStyle = "#2c3e50";
   ctx.lineWidth = 2;
   ctx.stroke();
-
   ctx.restore();
 }
 
@@ -1218,6 +1153,7 @@ async function init() {
   drawConnections();
   renderConnectionsList();
   loadMeteorImage();
+  loadRocketImage();
 
   window.addEventListener("resize", () => {
     drawConnections();
