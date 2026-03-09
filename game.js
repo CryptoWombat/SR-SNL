@@ -304,12 +304,10 @@ const state = {
 // Meteor: actual image (background removed), redraw when loaded
 let meteorImageCanvas = null;
 
-// Rocket: actual image (background removed). Body fixed size; only exhaust length scales with path.
+// Rocket: actual image (background removed). Body fixed size and correct aspect ratio; only exhaust length scales with path.
 let rocketImageCanvas = null;
 const ROCKET_BODY_FRAC = 0.38;
-const ROCKET_BODY_W = 52;
-const ROCKET_BODY_H = 52;
-const ROCKET_EXHAUST_W = 44;
+const ROCKET_BODY_DISPLAY_H = 56;
 
 function loadRocketImage() {
   const img = new Image();
@@ -580,35 +578,38 @@ function drawRocket(ctx, from, to, boardEl) {
   const pathLen = Math.hypot(b.x - a.x, b.y - a.y) || 1;
   const w = rocketImageCanvas.width;
   const h = rocketImageCanvas.height;
-  const bodyH = ROCKET_BODY_FRAC * h;
-  const exhaustH = h - bodyH;
-  const exhaustLen = Math.max(20, pathLen - ROCKET_BODY_H);
+  const bodyHImg = ROCKET_BODY_FRAC * h;
+  const exhaustHImg = h - bodyHImg;
+  // Preserve aspect ratio: body in image is w x bodyHImg, so display width = displayHeight * (w / bodyHImg)
+  const bodyDispH = ROCKET_BODY_DISPLAY_H;
+  const bodyDispW = bodyDispH * (w / bodyHImg);
+  const exhaustDispW = bodyDispW;
+  const exhaustLen = Math.max(20, pathLen - bodyDispH);
 
-  ctx.save();
-
-  // 1. Exhaust: from bottom of body (at b) down toward a. Length = pathLen - body (only exhaust length varies).
   const angle = Math.atan2(a.y - b.y, a.x - b.x);
+
+  ctx.save();
+  // 1. Exhaust: from bottom of body (at b) down toward a. Only length varies; width matches body.
   ctx.translate(b.x, b.y);
   ctx.rotate(angle);
   ctx.drawImage(
     rocketImageCanvas,
-    0, bodyH, w, exhaustH,
-    -ROCKET_EXHAUST_W / 2, 0, ROCKET_EXHAUST_W, exhaustLen
+    0, bodyHImg, w, exhaustHImg,
+    -exhaustDispW / 2, 0, exhaustDispW, exhaustLen
   );
   ctx.restore();
 
   ctx.save();
-  // 2. Body: fixed size, nose at b (rocket flies up so nose is at destination).
+  // 2. Body: fixed size with correct aspect ratio (no squashing), nose at b.
   ctx.translate(b.x, b.y);
   ctx.rotate(angle);
   ctx.drawImage(
     rocketImageCanvas,
-    0, 0, w, bodyH,
-    -ROCKET_BODY_W / 2, -ROCKET_BODY_H, ROCKET_BODY_W, ROCKET_BODY_H
+    0, 0, w, bodyHImg,
+    -bodyDispW / 2, -bodyDispH, bodyDispW, bodyDispH
   );
   ctx.restore();
 
-  // 3. Launch pad at start (a)
   ctx.save();
   ctx.beginPath();
   ctx.arc(a.x, a.y, 7, 0, Math.PI * 2);
