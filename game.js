@@ -301,13 +301,16 @@ const state = {
   nextMeteorId: 1
 };
 
-// Meteor: actual image (background removed), redraw when loaded
+// Meteor: fixed head size and tail width (80px ref), tail length = full path. Prevents oversized head.
 let meteorImageCanvas = null;
+const METEOR_REFERENCE_LEN = 80;
+const METEOR_HEAD_FRAC = 0.2;
 
-// Rocket: actual image (background removed). Body fixed size and correct aspect ratio; only exhaust length scales with path.
+// Rocket: your image, background removed, 50% size. We only set direction and exhaust length; body is drawn unchanged (no smush).
 let rocketImageCanvas = null;
-const ROCKET_BODY_FRAC = 0.35;
-const ROCKET_BODY_DISPLAY_H = 56;
+// Body = entire shuttle (nose to engine bells). Exhaust = flame strip only; we only vary exhaust drawn length.
+const ROCKET_BODY_FRAC = 0.62;
+const ROCKET_BODY_DISPLAY_H = 52;
 
 function loadRocketImage() {
   const img = new Image();
@@ -353,9 +356,14 @@ function loadMeteorImage() {
     for (let i = 0; i < d.length; i += 4) {
       const r = d[i], g = d[i + 1], b = d[i + 2];
       const sum = r + g + b;
+      const maxC = Math.max(r, g, b);
+      const minC = Math.min(r, g, b);
+      const saturation = maxC > 0 ? (maxC - minC) / maxC : 0;
       const isDarkBlue = (r < 110 && g < 110 && b > 60) || (sum < 140 && b > r && b > g);
       const isVeryDark = sum < 90;
-      if (isDarkBlue || isVeryDark) d[i + 3] = 0;
+      const isDarkGrey = sum < 200;
+      const isDarkGreyShadow = sum < 250 && saturation < 0.4;
+      if (isDarkBlue || isVeryDark || isDarkGrey || isDarkGreyShadow) d[i + 3] = 0;
     }
     ctx.putImageData(data, 0, 0);
     meteorImageCanvas = canvas;
@@ -383,15 +391,31 @@ function gridPosToSquare(gridRow, gridCol) {
     : boardRow * 10 + (9 - gridCol) + 1;
 }
 
-function getSquareCenter(n, boardEl) {
-  const rect = boardEl.getBoundingClientRect();
+function getSquareCenter(n, boardEl, canvasEl) {
+  const board = boardEl || (typeof document !== "undefined" && document.getElementById("board"));
+  const canvas = canvasEl || (typeof document !== "undefined" && document.getElementById("connections-canvas"));
+
+  if (board && canvasEl) {
+    const cell = board.querySelector(".cell[data-square='" + n + "']");
+    const canvasRect = canvasEl.getBoundingClientRect();
+    if (cell && canvasRect.width > 0 && canvasRect.height > 0) {
+      const cellRect = cell.getBoundingClientRect();
+      const cx = (cellRect.left + cellRect.width / 2 - canvasRect.left) * (canvasEl.width / canvasRect.width);
+      const cy = (cellRect.top + cellRect.height / 2 - canvasRect.top) * (canvasEl.height / canvasRect.height);
+      return { x: cx, y: cy };
+    }
+  }
+
+  const rect = (board && board.getBoundingClientRect && board.getBoundingClientRect()) || { width: 400, height: 400 };
   const cellW = rect.width / 10;
   const cellH = rect.height / 10;
   const { gridRow, col } = squareToGridPos(n);
-  return {
-    x: col * cellW + cellW / 2,
-    y: gridRow * cellH + cellH / 2
-  };
+  const cx = col * cellW + cellW / 2;
+  const cy = gridRow * cellH + cellH / 2;
+  if (canvasEl && canvasEl.width && canvasEl.height && rect.width && rect.height) {
+    return { x: cx * (canvasEl.width / rect.width), y: cy * (canvasEl.height / rect.height) };
+  }
+  return { x: cx, y: cy };
 }
 
 // ── Build the Board ───────────────────────────────────────────────────
@@ -554,6 +578,9 @@ function updateTokenPositions() {
 function resizeCanvas() {
   const canvas = document.getElementById("connections-canvas");
   const board = document.getElementById("board");
+  if (!canvas || !board) return;
+  // Force layout so getBoundingClientRect reflects current state
+  void board.offsetHeight;
   const rect = board.getBoundingClientRect();
   canvas.width = rect.width;
   canvas.height = rect.height;
@@ -562,87 +589,74 @@ function resizeCanvas() {
 function drawConnections() {
   const canvas = document.getElementById("connections-canvas");
   const board = document.getElementById("board");
+  if (!canvas || !board) return;
   const ctx = canvas.getContext("2d");
   resizeCanvas();
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  state.rockets.forEach(r => drawRocket(ctx, r.from, r.to, board));
-  state.meteors.forEach(m => drawMeteor(ctx, m.from, m.to, board));
+  state.rockets.forEach(r => drawRocket(ctx, r.from, r.to, board, canvas));
+  state.meteors.forEach(m => drawMeteor(ctx, m.from, m.to, board, canvas));
 }
 
-function drawRocket(ctx, from, to, boardEl) {
+function drawRocket(ctx, from, to, boardEl, canvasEl) {
   if (!rocketImageCanvas) return;
-  // Rockets go UP: "from" = lower square (launch), "to" = higher square (destination). Rocket at top (b), exhaust trails down to (a).
-  const a = getSquareCenter(from, boardEl);
-  const b = getSquareCenter(to, boardEl);
+  const a = getSquareCenter(from, boardEl, canvasEl);
+  const b = getSquareCenter(to, boardEl, canvasEl);
   const pathLen = Math.hypot(b.x - a.x, b.y - a.y) || 1;
   const w = rocketImageCanvas.width;
   const h = rocketImageCanvas.height;
-  const bodyHImg = ROCKET_BODY_FRAC * h;
-  const exhaustHImg = h - bodyHImg;
-  // Preserve aspect ratio: body in image is w x bodyHImg, so display width = displayHeight * (w / bodyHImg)
+  const bodyHImg = Math.max(1, ROCKET_BODY_FRAC * h);
+  const exhaustHImg = Math.max(1, h - bodyHImg);
   const bodyDispH = ROCKET_BODY_DISPLAY_H;
   const bodyDispW = bodyDispH * (w / bodyHImg);
   const exhaustDispW = bodyDispW;
-  const exhaustLen = Math.max(20, pathLen - bodyDispH);
+  const exhaustLen = Math.max(0, pathLen - bodyDispH);
 
-  // Nose must point UP (toward destination b). Exhaust trails DOWN toward launch a.
-  // So (0,1) in rotated frame = direction (a - b), i.e. from b to a.
+  // Origin so that: nose at b, exhaust end at a.
+  const ox = b.x + (bodyDispH * (a.x - b.x)) / pathLen;
+  const oy = b.y + (bodyDispH * (a.y - b.y)) / pathLen;
   const angle = Math.atan2(b.x - a.x, a.y - b.y);
 
   ctx.save();
-  // 1. Exhaust: from bottom of body (at b) down toward a.
-  ctx.translate(b.x, b.y);
+  ctx.translate(ox, oy);
   ctx.rotate(angle);
-  ctx.drawImage(
-    rocketImageCanvas,
-    0, bodyHImg, w, exhaustHImg,
-    -exhaustDispW / 2, 0, exhaustDispW, exhaustLen
-  );
-  ctx.restore();
-
-  ctx.save();
-  // 2. Body: nose at b, pointing up. Draw so image top (nose) is at -bodyDispH.
-  ctx.translate(b.x, b.y);
-  ctx.rotate(angle);
+  if (exhaustLen > 0) {
+    ctx.drawImage(
+      rocketImageCanvas,
+      0, bodyHImg, w, exhaustHImg,
+      -exhaustDispW / 2, 0, exhaustDispW, exhaustLen
+    );
+  }
   ctx.drawImage(
     rocketImageCanvas,
     0, 0, w, bodyHImg,
     -bodyDispW / 2, -bodyDispH, bodyDispW, bodyDispH
   );
   ctx.restore();
-
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(a.x, a.y, 7, 0, Math.PI * 2);
-  ctx.fillStyle = "#34495e";
-  ctx.fill();
-  ctx.strokeStyle = "#2c3e50";
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.restore();
 }
 
-function drawMeteor(ctx, from, to, boardEl) {
+function drawMeteor(ctx, from, to, boardEl, canvasEl) {
   if (!meteorImageCanvas) return;
-  // Meteors send you DOWN: "from" = higher square (top), "to" = lower square (bottom). Head at top, tail trails down.
-  const a = getSquareCenter(from, boardEl);
-  const b = getSquareCenter(to, boardEl);
-  const pathLen = Math.hypot(b.x - a.x, b.y - a.y) || 1;
-  const w = meteorImageCanvas.width;
-  const h = meteorImageCanvas.height;
-  // In your image the bright ball (head) may be upper-right and tail trails to lower-left. Head at a (top), tail must point down to b.
-  const headX = 0.88 * w, headY = 0.18 * h;
-  const tailX = 0.15 * w, tailY = 0.82 * h;
-  const meteorLengthInImage = Math.hypot(tailX - headX, tailY - headY);
-  const scale = pathLen / meteorLengthInImage;
-  const imageAngle = Math.atan2(tailY - headY, tailX - headX);
-  const downAngle = Math.atan2(b.y - a.y, b.x - a.x);
+  const a = getSquareCenter(from, boardEl, canvasEl);
+  const b = getSquareCenter(to, boardEl, canvasEl);
+  const pathLen = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+  const imgW = meteorImageCanvas.width;
+  const imgH = meteorImageCanvas.height;
+  const scale = METEOR_REFERENCE_LEN / imgH;
+  const dispW = imgW * scale;
+  const headHImg = Math.max(1, imgH * METEOR_HEAD_FRAC);
+  const tailHImg = Math.max(1, imgH - headHImg);
+  const headDisplaySize = headHImg * scale;
+  const headCropSize = Math.min(headHImg, imgW);
+  const headSx = (imgW - headCropSize) / 2;
+
+  const angle = Math.atan2(a.x - b.x, b.y - a.y);
+
   ctx.save();
-  ctx.translate(a.x, a.y);
-  ctx.rotate(downAngle - imageAngle);
-  ctx.translate(-headX * scale, -headY * scale);
-  ctx.drawImage(meteorImageCanvas, 0, 0, w, h, 0, 0, w * scale, h * scale);
+  ctx.translate(b.x, b.y);
+  ctx.rotate(angle);
+  ctx.drawImage(meteorImageCanvas, 0, tailHImg, imgW, -tailHImg, -dispW / 2, -pathLen, dispW, pathLen);
+  ctx.drawImage(meteorImageCanvas, headSx, imgH - headHImg, headCropSize, headHImg, -headDisplaySize / 2, -headDisplaySize, headDisplaySize, headDisplaySize);
   ctx.restore();
 }
 

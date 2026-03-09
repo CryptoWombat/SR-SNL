@@ -15,5 +15,8 @@
   "dependencies": {
     "docx": "^9.6.0",
     "jsdom": "^28.1.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }

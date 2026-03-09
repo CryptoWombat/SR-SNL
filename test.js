@@ -27,7 +27,7 @@ window.fetch = function() {
 
 window.HTMLCanvasElement.prototype.getContext = function() {
   return {
-    clearRect() {}, beginPath() {}, moveTo() {}, bezierCurveTo() {},
+    clearRect() {}, beginPath() {}, moveTo() {}, bezierCurveTo() {}, quadraticCurveTo() {},
     stroke() {}, fill() {}, arc() {}, save() {}, restore() {},
     setLineDash() {}, fillText() {},
     createLinearGradient() { return { addColorStop() {} }; },
@@ -58,6 +58,7 @@ await window._initPromise;
 
 const squareToGridPos = window.squareToGridPos;
 const gridPosToSquare = window.gridPosToSquare;
+const getSquareCenter = window.getSquareCenter;
 const SPACE_EVENTS = window.SPACE_EVENTS;
 const eventMap = window.eventMap;
 const state = window.state;
@@ -133,6 +134,26 @@ console.log("\n\x1b[36mRoundtrip (all 100 squares):\x1b[0m");
     }
   }
   if (allOk) assert(true, "squareToGridPos ↔ gridPosToSquare roundtrip (all 100 squares)");
+})();
+
+// ── Test: getSquareCenter (meteor/rocket positioning) ──
+console.log("\n\x1b[36mgetSquareCenter (rocket/meteor positioning):\x1b[0m");
+(function() {
+  const board = document.getElementById("board");
+  if (!board) return;
+  const rect = { width: 500, height: 500 };
+  const cellW = rect.width / 10;
+  const cellH = rect.height / 10;
+  const tolerance = 2;
+  const near = (a, b) => Math.abs(a - b) <= tolerance;
+  const c91 = getSquareCenter(91, board, null);
+  const c68 = getSquareCenter(68, board, null);
+  const c26 = getSquareCenter(26, board, null);
+  const c46 = getSquareCenter(46, board, null);
+  assert(near(c91.x, 9 * cellW + cellW / 2) && near(c91.y, 0 * cellH + cellH / 2), "Sq 91 at top-right");
+  assert(near(c68.x, 7 * cellW + cellW / 2) && near(c68.y, 3 * cellH + cellH / 2), "Sq 68 at correct position");
+  assert(near(c26.x, 5 * cellW + cellW / 2) && near(c26.y, 7 * cellH + cellH / 2), "Sq 26 at correct position");
+  assert(near(c46.x, 5 * cellW + cellW / 2) && near(c46.y, 5 * cellH + cellH / 2), "Sq 46 at correct position");
 })();
 
 // ── Test: Event data ──

@@ -94,6 +94,11 @@
       pointer-events: none !important;
     }
 
+    /* Draw rockets/meteors on top of the grid; clicks still go through to cells */
+    .admin-board-container #connections-canvas {
+      z-index: 15;
+    }
+
     .admin-board-container .cell {
       cursor: pointer;
       position: relative;
@@ -580,7 +585,7 @@
     }
   </script>
 
-  <script src="game.js?v=7"></script>
+  <script src="game.js?v=9"></script>
   <script>
     const statusBar = document.getElementById("status-bar");
     let selectedSquare = null;
@@ -622,15 +627,36 @@
       if (d.legendLabels != null && id("design-legend")) id("design-legend").value = d.legendLabels;
     }
 
+    function saveToLocalStorage(payload) {
+      try {
+        localStorage.setItem("spacerace-connections", JSON.stringify({
+          rockets: payload.rockets,
+          meteors: payload.meteors,
+          nextRocketId: state.nextRocketId,
+          nextMeteorId: state.nextMeteorId
+        }));
+        localStorage.setItem("spacerace-squares", JSON.stringify(payload.customSquares));
+        if (payload.design) {
+          const key = "spacerace-design";
+          localStorage.setItem(key, JSON.stringify(payload.design));
+        }
+      } catch (e) { console.warn("localStorage save failed", e); }
+    }
+
     async function pushConfigToAPI() {
-      const pw = sessionStorage.getItem("admin_pw");
-      if (!pw) { showStatus("Session expired — please reload and re-enter password.", "info"); return; }
       const payload = {
         rockets: state.rockets,
         meteors: state.meteors,
         customSquares: customSquares,
         design: getDesignFromForm()
       };
+      saveToLocalStorage(payload);
+
+      const pw = sessionStorage.getItem("admin_pw");
+      if (!pw) {
+        showStatus("Saved locally. (Re-enter password to sync to server.)", "saved");
+        return;
+      }
       try {
         const res = await fetch("/api/config", {
           method: "PUT",
@@ -640,7 +666,7 @@
         if (!res.ok) throw new Error(res.status);
         showStatus("Saved! Changes are live for all players.", "saved");
       } catch (e) {
-        showStatus("Save failed (" + e.message + "). Try again.", "info");
+        showStatus("Saved locally. (Server unavailable: " + e.message + ")", "saved");
       }
     }
 
@@ -671,18 +697,23 @@
         if (cfg.design) setDesignToForm(cfg.design);
       } catch (e) {
         try {
-          const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
-          if (saved) {
-            state.rockets = saved.rockets || [];
-            state.meteors = saved.meteors || [];
-            state.nextRocketId = saved.nextRocketId || 1;
-            state.nextMeteorId = saved.nextMeteorId || 1;
+          const conn = JSON.parse(localStorage.getItem("spacerace-connections"));
+          if (conn) {
+            state.rockets = conn.rockets || [];
+            state.meteors = conn.meteors || [];
+            state.nextRocketId = conn.nextRocketId || 1;
+            state.nextMeteorId = conn.nextMeteorId || 1;
           }
+          const sq = JSON.parse(localStorage.getItem("spacerace-squares"));
+          if (sq && typeof sq === "object") customSquares = sq;
+          const design = JSON.parse(localStorage.getItem("spacerace-design"));
+          if (design) setDesignToForm(design);
         } catch (e2) {}
       }
       buildBoard();
       drawConnections();
       renderConnectionsList();
+      setTimeout(drawConnections, 400);
     })();
 
     // Delegated click on board container so every cell (including 100) is clickable
