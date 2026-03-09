@@ -337,7 +337,7 @@ function buildBoard() {
         cell.appendChild(actionSpan);
       }
 
-      if (ev && ev.title) {
+      if (ev) {
         cell.addEventListener("mouseenter", (e) => showTooltip(e, ev));
         cell.addEventListener("mousemove", moveTooltip);
         cell.addEventListener("mouseleave", hideTooltip);
@@ -372,12 +372,15 @@ function showTooltip(e, ev) {
   const actionLine = ev.action
     ? `<div class="tt-action">${ev.action > 0 ? "⏩" : "⏪"} Move ${Math.abs(ev.action)} square${Math.abs(ev.action) !== 1 ? "s" : ""} ${ev.action > 0 ? "forward" : "backward"}</div>`
     : "";
-  tooltipEl.innerHTML = `
+  const hasContent = dateLine || titleLine || ev.desc || actionLine;
+  tooltipEl.innerHTML = hasContent
+    ? `
     ${dateLine ? `<div class="tt-date">${dateLine}</div>` : ""}
     ${titleLine ? `<div class="tt-title">${titleLine}</div>` : ""}
     ${ev.desc ? `<div class="tt-desc">${ev.desc}</div>` : ""}
     ${actionLine}
-  `;
+  `
+    : `<div class="tt-title">Square ${ev.square || ""}</div>`;
   tooltipEl.classList.remove("hidden");
   moveTooltip(e);
 }
