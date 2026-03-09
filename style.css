@@ -20,6 +20,7 @@
 
   --neutral-bg: #1a1a2e;
   --neutral-border: #2a2a4e;
+  --neutral-gray: #6b7280;
 
   --text-primary: #e0e0e0;
   --text-secondary: #8888aa;
@@ -214,15 +215,15 @@ header h1 {
 }
 
 .cell-ussr {
-  background: linear-gradient(135deg, #3d1111, #5a1a1a);
-  border-color: var(--ussr);
-  box-shadow: inset 0 0 15px rgba(231, 76, 60, 0.2);
+  background: var(--ussr);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.15);
 }
 
 .cell-usa {
-  background: linear-gradient(135deg, #0e1f3d, #142d5a);
-  border-color: var(--usa);
-  box-shadow: inset 0 0 15px rgba(52, 152, 219, 0.2);
+  background: var(--usa);
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: inset 0 0 12px rgba(255, 255, 255, 0.15);
 }
 
 .cell-finish {
@@ -237,7 +238,7 @@ header h1 {
   box-shadow: inset 0 0 15px rgba(74, 138, 74, 0.2);
 }
 
-/* === PLAYER TOKENS (classic rocket: nose cone, body, engine bell) === */
+/* === PLAYER TOKENS (same rocket as Mission Control: inline SVG, USSR red, USA blue) === */
 .token {
   position: absolute;
   width: clamp(24px, 3.2vw, 38px);
@@ -249,61 +250,22 @@ header h1 {
   transition: left 0.4s ease, top 0.4s ease;
   z-index: 10;
   pointer-events: none;
-  /* Rocket silhouette: point at top, straight body, flared base */
-  -webkit-clip-path: polygon(
-    50% 0%,
-    44% 5%,
-    38% 14%,
-    38% 50%,
-    28% 68%,
-    50% 98%,
-    72% 68%,
-    62% 50%,
-    62% 14%,
-    56% 5%
-  );
-  clip-path: polygon(
-    50% 0%,
-    44% 5%,
-    38% 14%,
-    38% 50%,
-    28% 68%,
-    50% 98%,
-    72% 68%,
-    62% 50%,
-    62% 14%,
-    56% 5%
-  );
+  background: none;
 }
 
-.token-ussr {
-  background: linear-gradient(180deg,
-    #ff8888 0%,
-    #dd3333 18%,
-    #bb0000 52%,
-    #880000 72%,
-    #550000 96%
-  );
-  box-shadow:
-    0 0 12px rgba(255, 0, 0, 0.4),
-    inset 0 2px 0 rgba(255,255,255,0.25),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-  border: 1px solid rgba(255, 150, 150, 0.5);
+.token .token-rocket-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: contain;
 }
 
-.token-usa {
-  background: linear-gradient(180deg,
-    #88bbff 0%,
-    #3388dd 18%,
-    #0066cc 52%,
-    #004488 72%,
-    #002255 96%
-  );
-  box-shadow:
-    0 0 12px rgba(0, 100, 255, 0.4),
-    inset 0 2px 0 rgba(255,255,255,0.25),
-    inset 0 -1px 0 rgba(0,0,0,0.2);
-  border: 1px solid rgba(150, 200, 255, 0.5);
+.token-ussr .token-rocket-svg {
+  filter: drop-shadow(0 0 4px rgba(231, 76, 60, 0.5));
+}
+
+.token-usa .token-rocket-svg {
+  filter: drop-shadow(0 0 4px rgba(52, 152, 219, 0.5));
 }
 
 /* === SIDE PANEL === */
@@ -711,18 +673,18 @@ header h1 {
 }
 
 .swatch-ussr {
-  background: linear-gradient(135deg, #3d1111, #5a1a1a);
-  border: 1px solid var(--ussr);
+  background: var(--ussr);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .swatch-usa {
-  background: linear-gradient(135deg, #0e1f3d, #142d5a);
-  border: 1px solid var(--usa);
+  background: var(--usa);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .swatch-neutral {
-  background: var(--neutral-bg);
-  border: 1px solid var(--neutral-border);
+  background: var(--neutral-gray);
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 /* === TOOLTIP === */

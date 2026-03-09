@@ -437,7 +437,16 @@ function hideTooltip() {
   tooltipEl.classList.add("hidden");
 }
 
-// ── Player Tokens ─────────────────────────────────────────────────────
+// ── Player Tokens (same rocket as Mission Control: USSR red, USA blue) ──
+
+function getBoardTokenRocketSvg(pid) {
+  const isUssr = pid === "ussr";
+  const gradId = `board-token-${pid}-body`;
+  const bodyFrom = isUssr ? "#e74c3c" : "#5dade2";
+  const bodyTo = isUssr ? "#c0392b" : "#3498db";
+  const portholeInner = isUssr ? "#e74c3c" : "#3498db";
+  return `<svg viewBox="0 0 28 40" xmlns="http://www.w3.org/2000/svg" class="token-rocket-svg"><defs><linearGradient id="${gradId}" x1="14" y1="40" x2="14" y2="0"><stop offset="0" stop-color="${bodyTo}"/><stop offset="1" stop-color="${bodyFrom}"/></linearGradient></defs><path d="M14 0 L24 8 L24 20 L28 28 L24 26 L14 34 L4 26 L0 28 L4 20 L4 8 Z" fill="#2c3e50"/><rect x="2" y="20" width="24" height="8" rx="1" fill="url(#${gradId})"/><rect x="4" y="8" width="20" height="4" fill="#e67e22"/><circle cx="14" cy="24" r="4" fill="#2c3e50"/><circle cx="14" cy="24" r="2.5" fill="${portholeInner}"/><circle cx="13" cy="23" r="0.8" fill="rgba(255,255,255,0.7)"/><path d="M4 26 L0 36 L4 32 L4 26 M24 26 L28 36 L24 32 L24 26" fill="#2c3e50"/><rect x="6" y="32" width="16" height="4" fill="#2c3e50"/><rect x="8" y="34" width="12" height="3" fill="#e74c3c"/><path d="M14 37 L18 32 L16 37 L14 40 L12 37 L10 32 Z" fill="#f1c40f"/></svg>`;
+}
 
 function createTokens() {
   const container = document.getElementById("player-tokens");
@@ -446,7 +455,7 @@ function createTokens() {
     const token = document.createElement("div");
     token.className = `token token-${pid}`;
     token.id = `token-${pid}`;
-    token.textContent = state.players[pid].icon;
+    token.innerHTML = getBoardTokenRocketSvg(pid);
     container.appendChild(token);
   });
   updateTokenPositions();
