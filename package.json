@@ -4,7 +4,9 @@
   "description": "",
   "main": "game.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "node test.js",
+    "ship": "node scripts/ship.js",
+    "deploy": "node scripts/ship.js"
   },
   "keywords": [],
   "author": "",
