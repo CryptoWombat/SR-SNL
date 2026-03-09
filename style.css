@@ -526,62 +526,26 @@ header h1 {
 
 .player-ship {
   display: block;
-  width: 24px;
-  height: 36px;
+  width: 28px;
+  height: 42px;
   margin-bottom: 6px;
   flex-shrink: 0;
-  -webkit-clip-path: polygon(
-    50% 0%,
-    44% 5%,
-    38% 14%,
-    38% 50%,
-    28% 68%,
-    50% 98%,
-    72% 68%,
-    62% 50%,
-    62% 14%,
-    56% 5%
-  );
-  clip-path: polygon(
-    50% 0%,
-    44% 5%,
-    38% 14%,
-    38% 50%,
-    28% 68%,
-    50% 98%,
-    72% 68%,
-    62% 50%,
-    62% 14%,
-    56% 5%
-  );
+  line-height: 0;
 }
 
-.player-ship-ussr {
-  background: linear-gradient(180deg,
-    #ff8888 0%,
-    #dd3333 18%,
-    #bb0000 52%,
-    #880000 72%,
-    #550000 96%
-  );
-  box-shadow:
-    0 0 8px rgba(255, 0, 0, 0.35),
-    inset 0 1px 0 rgba(255,255,255,0.2);
-  border: 1px solid rgba(255, 150, 150, 0.5);
+.player-ship .ship-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  filter: drop-shadow(0 0 4px currentColor);
 }
 
-.player-ship-usa {
-  background: linear-gradient(180deg,
-    #88bbff 0%,
-    #3388dd 18%,
-    #0066cc 52%,
-    #004488 72%,
-    #002255 96%
-  );
-  box-shadow:
-    0 0 8px rgba(0, 100, 255, 0.35),
-    inset 0 1px 0 rgba(255,255,255,0.2);
-  border: 1px solid rgba(150, 200, 255, 0.5);
+.player-ship .ship-ussr {
+  color: #cc2222;
+}
+
+.player-ship .ship-usa {
+  color: #2266cc;
 }
 
 .ussr-card {

@@ -477,40 +477,55 @@ function drawRocket(ctx, from, to, boardEl) {
   path.moveTo(a.x, a.y);
   path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
 
-  // Full-length exhaust glow behind
-  ctx.strokeStyle = "rgba(255, 165, 0, 0.2)";
-  ctx.lineWidth = 28;
+  // Exhaust trail (tapered: wide at bottom, narrow at top)
+  const trailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+  trailGrad.addColorStop(0, "rgba(255, 100, 0, 0.9)");
+  trailGrad.addColorStop(0.5, "rgba(255, 180, 0, 0.5)");
+  trailGrad.addColorStop(1, "rgba(255, 220, 150, 0.1)");
+  ctx.strokeStyle = trailGrad;
+  ctx.lineWidth = 14;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.stroke(path);
 
-  // Full-length rocket body (thick stroke = whole way up)
-  const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  gradient.addColorStop(0, "#ff6600");
-  gradient.addColorStop(0.25, "#ff9933");
-  gradient.addColorStop(0.6, "#ffcc00");
-  gradient.addColorStop(0.85, "#c0c0c0");
-  gradient.addColorStop(1, "#ffffff");
-  ctx.strokeStyle = gradient;
-  ctx.lineWidth = 18;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.stroke(path);
-
-  // Nose cone highlight at top (destination)
+  // Rocket silhouette at destination (pointing up): nose, body, fins
+  const scale = 12;
+  const rx = b.x;
+  const ry = b.y;
+  ctx.translate(rx, ry);
+  ctx.scale(1, -1); // so nose points up in screen coords
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffffff";
+  ctx.moveTo(0, scale * 1.4);           // nose
+  ctx.lineTo(scale * 0.5, scale * 0.4);
+  ctx.lineTo(scale * 0.5, -scale * 0.6);
+  ctx.lineTo(scale * 0.7, -scale * 1.1); // fin
+  ctx.lineTo(scale * 0.5, -scale * 0.9);
+  ctx.lineTo(0, -scale * 1.3);          // base
+  ctx.lineTo(-scale * 0.5, -scale * 0.9);
+  ctx.lineTo(-scale * 0.7, -scale * 1.1);
+  ctx.lineTo(-scale * 0.5, -scale * 0.6);
+  ctx.lineTo(-scale * 0.5, scale * 0.4);
+  ctx.closePath();
+  const rocketGrad = ctx.createLinearGradient(0, -scale * 1.3, 0, scale * 1.4);
+  rocketGrad.addColorStop(0, "#ff6600");
+  rocketGrad.addColorStop(0.4, "#ffaa00");
+  rocketGrad.addColorStop(0.8, "#cccccc");
+  rocketGrad.addColorStop(1, "#ffffff");
+  ctx.fillStyle = rocketGrad;
   ctx.fill();
-  ctx.strokeStyle = "rgba(200,200,200,0.8)";
+  ctx.strokeStyle = "rgba(255,255,255,0.6)";
   ctx.lineWidth = 1;
   ctx.stroke();
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
 
-  // Launch pad at bottom
+  // Launch pad at start
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 5, 0, Math.PI * 2);
+  ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
   ctx.fillStyle = "#ff6600";
   ctx.fill();
+  ctx.strokeStyle = "#ff9933";
+  ctx.lineWidth = 1;
+  ctx.stroke();
 
   ctx.restore();
 }
@@ -531,45 +546,41 @@ function drawMeteor(ctx, from, to, boardEl) {
   path.moveTo(a.x, a.y);
   path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
 
-  // Full-length fire glow behind
-  ctx.strokeStyle = "rgba(255, 50, 0, 0.25)";
-  ctx.lineWidth = 30;
+  // Meteor tail: thick stroke from head to impact (bright near head, fades at impact)
+  const tailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+  tailGrad.addColorStop(0, "#ffdd88");
+  tailGrad.addColorStop(0.2, "#ff9900");
+  tailGrad.addColorStop(0.5, "#ff4400");
+  tailGrad.addColorStop(0.85, "#aa2200");
+  tailGrad.addColorStop(1, "rgba(80, 10, 0, 0.3)");
+  ctx.strokeStyle = tailGrad;
+  ctx.lineWidth = 22;
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
   ctx.stroke(path);
 
-  // Full-length meteor streak (bright head at top → fading tail to bottom)
-  const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  gradient.addColorStop(0, "#ffffff");
-  gradient.addColorStop(0.08, "#ffcc00");
-  gradient.addColorStop(0.2, "#ff6600");
-  gradient.addColorStop(0.5, "#ff3300");
-  gradient.addColorStop(0.8, "#aa2200");
-  gradient.addColorStop(1, "#441100");
-  ctx.strokeStyle = gradient;
-  ctx.lineWidth = 20;
-  ctx.lineCap = "round";
-  ctx.lineJoin = "round";
-  ctx.stroke(path);
-
-  // Bright meteor head at start (top)
+  // Meteor head: bright round ball at start (the actual meteor)
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+  ctx.arc(a.x, a.y, 14, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 180, 80, 0.4)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 10, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffcc66";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 6, 0, Math.PI * 2);
   ctx.fillStyle = "#ffffff";
   ctx.fill();
-  ctx.beginPath();
-  ctx.arc(a.x, a.y, 5, 0, Math.PI * 2);
-  ctx.fillStyle = "#ffcc00";
-  ctx.fill();
 
-  // Impact / explosion at landing (bottom)
+  // Impact crater / explosion at end
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 10, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 80, 0, 0.35)";
+  ctx.arc(b.x, b.y, 12, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 60, 0, 0.4)";
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
-  ctx.fillStyle = "#ff2200";
+  ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = "#ff3300";
   ctx.fill();
 
   ctx.restore();
