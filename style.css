@@ -15,19 +15,8 @@
   --panel-bg: #0d0d2b;
   --panel-border: #1a1a4a;
 
-  --ussr-good: #c0392b;
-  --ussr-good-bg: #e74c3c33;
-  --ussr-good-border: #e74c3c;
-  --ussr-bad: #6b1a1a;
-  --ussr-bad-bg: #4a111166;
-  --ussr-bad-border: #8b2020;
-
-  --usa-good: #2471a3;
-  --usa-good-bg: #3498db33;
-  --usa-good-border: #3498db;
-  --usa-bad: #1a3a6b;
-  --usa-bad-bg: #11224a66;
-  --usa-bad-border: #1a4a8b;
+  --ussr: #e74c3c;
+  --usa: #3498db;
 
   --neutral-bg: #1a1a2e;
   --neutral-border: #2a2a4e;
@@ -224,28 +213,16 @@ header h1 {
   border-color: var(--neutral-border);
 }
 
-.cell-ussr-good {
+.cell-ussr {
   background: linear-gradient(135deg, #3d1111, #5a1a1a);
-  border-color: var(--ussr-good-border);
-  box-shadow: inset 0 0 15px rgba(231, 76, 60, 0.15);
+  border-color: var(--ussr);
+  box-shadow: inset 0 0 15px rgba(231, 76, 60, 0.2);
 }
 
-.cell-ussr-bad {
-  background: linear-gradient(135deg, #1a0808, #2d0e0e);
-  border-color: var(--ussr-bad-border);
-  box-shadow: inset 0 0 15px rgba(107, 26, 26, 0.3);
-}
-
-.cell-usa-good {
+.cell-usa {
   background: linear-gradient(135deg, #0e1f3d, #142d5a);
-  border-color: var(--usa-good-border);
-  box-shadow: inset 0 0 15px rgba(52, 152, 219, 0.15);
-}
-
-.cell-usa-bad {
-  background: linear-gradient(135deg, #080e1a, #0e162d);
-  border-color: var(--usa-bad-border);
-  box-shadow: inset 0 0 15px rgba(26, 58, 107, 0.3);
+  border-color: var(--usa);
+  box-shadow: inset 0 0 15px rgba(52, 152, 219, 0.2);
 }
 
 .cell-finish {
@@ -392,13 +369,13 @@ header h1 {
 
 .turn-ussr {
   background: rgba(231, 76, 60, 0.2);
-  border: 1px solid var(--ussr-good-border);
+  border: 1px solid var(--ussr);
   color: #ff6b5b;
 }
 
 .turn-usa {
   background: rgba(52, 152, 219, 0.2);
-  border: 1px solid var(--usa-good-border);
+  border: 1px solid var(--usa);
   color: #5ba8ff;
 }
 
@@ -733,24 +710,14 @@ header h1 {
   flex-shrink: 0;
 }
 
-.swatch-ussr-good {
+.swatch-ussr {
   background: linear-gradient(135deg, #3d1111, #5a1a1a);
-  border: 1px solid var(--ussr-good-border);
+  border: 1px solid var(--ussr);
 }
 
-.swatch-ussr-bad {
-  background: linear-gradient(135deg, #1a0808, #2d0e0e);
-  border: 1px solid var(--ussr-bad-border);
-}
-
-.swatch-usa-good {
+.swatch-usa {
   background: linear-gradient(135deg, #0e1f3d, #142d5a);
-  border: 1px solid var(--usa-good-border);
-}
-
-.swatch-usa-bad {
-  background: linear-gradient(135deg, #080e1a, #0e162d);
-  border: 1px solid var(--usa-bad-border);
+  border: 1px solid var(--usa);
 }
 
 .swatch-neutral {

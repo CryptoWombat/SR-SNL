@@ -180,16 +180,16 @@
     // ── Test: Cell classes ──
     (function() {
       const cell3 = document.querySelector('.cell[data-square="3"]');
-      assert(cell3.classList.contains("cell-ussr-good"), "Square 3 (Sputnik 1) has cell-ussr-good class");
+      assert(cell3.classList.contains("cell-ussr"), "Square 3 (Sputnik 1) has cell-ussr class");
 
       const cell81 = document.querySelector('.cell[data-square="81"]');
-      assert(cell81.classList.contains("cell-usa-bad"), "Square 81 (Apollo 1 Fire) has cell-usa-bad class");
+      assert(cell81.classList.contains("cell-usa"), "Square 81 (Apollo 1 Fire) has cell-usa class");
 
       const cell75 = document.querySelector('.cell[data-square="75"]');
-      assert(cell75.classList.contains("cell-ussr-bad"), "Square 75 (Korolev death) has cell-ussr-bad class");
+      assert(cell75.classList.contains("cell-ussr"), "Square 75 (Korolev death) has cell-ussr class");
 
       const cell9 = document.querySelector('.cell[data-square="9"]');
-      assert(cell9.classList.contains("cell-usa-good"), "Square 9 (Explorer 1) has cell-usa-good class");
+      assert(cell9.classList.contains("cell-usa"), "Square 9 (Explorer 1) has cell-usa class");
 
       const cell5 = document.querySelector('.cell[data-square="5"]');
       assert(cell5.classList.contains("cell-neutral"), "Square 5 (no event) has cell-neutral class");

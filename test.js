@@ -192,16 +192,16 @@ console.log("\n\x1b[36mBoard DOM:\x1b[0m");
 console.log("\n\x1b[36mCell classification:\x1b[0m");
 (function() {
   const cell3 = document.querySelector('.cell[data-square="3"]');
-  assert(cell3.classList.contains("cell-ussr-good"), "Sq 3 (Sputnik 1) → cell-ussr-good");
+  assert(cell3.classList.contains("cell-ussr"), "Sq 3 (Sputnik 1) → cell-ussr");
 
   const cell81 = document.querySelector('.cell[data-square="81"]');
-  assert(cell81.classList.contains("cell-usa-bad"), "Sq 81 (Apollo 1 fire) → cell-usa-bad");
+  assert(cell81.classList.contains("cell-usa"), "Sq 81 (Apollo 1 fire) → cell-usa");
 
   const cell75 = document.querySelector('.cell[data-square="75"]');
-  assert(cell75.classList.contains("cell-ussr-bad"), "Sq 75 (Korolev death) → cell-ussr-bad");
+  assert(cell75.classList.contains("cell-ussr"), "Sq 75 (Korolev death) → cell-ussr");
 
   const cell9 = document.querySelector('.cell[data-square="9"]');
-  assert(cell9.classList.contains("cell-usa-good"), "Sq 9 (Explorer 1) → cell-usa-good");
+  assert(cell9.classList.contains("cell-usa"), "Sq 9 (Explorer 1) → cell-usa");
 
   const cell5 = document.querySelector('.cell[data-square="5"]');
   assert(cell5.classList.contains("cell-neutral"), "Sq 5 → cell-neutral");

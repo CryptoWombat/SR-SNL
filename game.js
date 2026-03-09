@@ -237,16 +237,8 @@ function applyDesign(d) {
     if (h1) h1.textContent = d.headingText;
   }
   if (d.accentColor) root.style.setProperty("--text-accent", d.accentColor);
-  if (d.ussrColor) {
-    root.style.setProperty("--ussr-good", d.ussrColor);
-    root.style.setProperty("--ussr-good-border", d.ussrColor);
-    root.style.setProperty("--ussr-bad-border", d.ussrColor);
-  }
-  if (d.usaColor) {
-    root.style.setProperty("--usa-good", d.usaColor);
-    root.style.setProperty("--usa-good-border", d.usaColor);
-    root.style.setProperty("--usa-bad-border", d.usaColor);
-  }
+  if (d.ussrColor) root.style.setProperty("--ussr", d.ussrColor);
+  if (d.usaColor) root.style.setProperty("--usa", d.usaColor);
   let styleEl = document.getElementById("design-overrides");
   if (!styleEl) {
     styleEl = document.createElement("style");
@@ -356,8 +348,8 @@ function buildBoard() {
         cell.classList.add("cell-start");
       } else if (sq === 100) {
         cell.classList.add("cell-finish");
-      } else if (ev && ev.country && ev.sentiment) {
-        cell.classList.add(`cell-${ev.country}-${ev.sentiment}`);
+      } else if (ev && ev.country) {
+        cell.classList.add(`cell-${ev.country}`);
       } else {
         cell.classList.add("cell-neutral");
       }
