@@ -83,8 +83,21 @@
       max-width: calc(100vw - 460px);
     }
 
+    /* Ensure grid and cells are on top so every cell (including 100) is clickable */
+    .admin-board-container .board-grid {
+      position: relative;
+      z-index: 10;
+    }
+
+    .admin-board-container #connections-canvas,
+    .admin-board-container #player-tokens {
+      pointer-events: none !important;
+    }
+
     .admin-board-container .cell {
       cursor: pointer;
+      position: relative;
+      z-index: 1;
     }
 
     .admin-board-container .cell.selected-cell {
@@ -590,14 +603,19 @@
       buildBoard();
       drawConnections();
       renderConnectionsList();
+    })();
 
-      document.querySelectorAll(".cell").forEach(cell => {
-        cell.addEventListener("click", () => {
-          const sq = parseInt(cell.dataset.square);
-          if (sq === 1) return;
-          selectSquare(sq);
-        });
-      });
+    // Delegated click on board container so every cell (including 100) is clickable
+    (function initBoardClicks() {
+      const container = document.querySelector(".admin-board-container");
+      if (!container) return;
+      container.addEventListener("click", function boardClick(e) {
+        const cell = e.target.closest(".cell");
+        if (!cell || !cell.dataset.square) return;
+        const sq = parseInt(cell.dataset.square, 10);
+        if (isNaN(sq) || sq === 1) return;
+        if (typeof selectSquare === "function") selectSquare(sq);
+      }, true);
     })();
 
     // Clear all connections
@@ -671,16 +689,6 @@
       saveSquaresToStorage();
       buildBoard();
       drawConnections();
-
-      // Re-attach click handlers
-      document.querySelectorAll(".cell").forEach(cell => {
-        cell.addEventListener("click", () => {
-          const sq = parseInt(cell.dataset.square);
-          if (sq === 1) return;
-          selectSquare(sq);
-        });
-      });
-
       selectSquare(selectedSquare);
     });
 
@@ -691,15 +699,6 @@
       saveSquaresToStorage();
       buildBoard();
       drawConnections();
-
-      document.querySelectorAll(".cell").forEach(cell => {
-        cell.addEventListener("click", () => {
-          const sq = parseInt(cell.dataset.square);
-          if (sq === 1) return;
-          selectSquare(sq);
-        });
-      });
-
       selectSquare(selectedSquare);
     });
   </script>
