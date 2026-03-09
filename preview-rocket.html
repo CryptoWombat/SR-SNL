@@ -19,7 +19,7 @@
   </div>
 
   <script>
-    const ROCKET_BODY_FRAC = 0.38;
+    const ROCKET_BODY_FRAC = 0.35;
     const ROCKET_BODY_DISPLAY_H = 56;
 
     const img = new Image();
@@ -59,7 +59,7 @@
       const bodyDispW = bodyDispH * (w / bodyHImg);
       const exhaustDispW = bodyDispW;
       const exhaustLen = Math.max(20, pathLen - bodyDispH);
-      const angle = Math.atan2(a.y - b.y, a.x - b.x);
+      const angle = Math.atan2(b.x - a.x, a.y - b.y);
 
       bctx.fillStyle = "#1a1a3a";
       bctx.fillRect(0, 0, 400, 400);

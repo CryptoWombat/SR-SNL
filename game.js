@@ -306,7 +306,7 @@ let meteorImageCanvas = null;
 
 // Rocket: actual image (background removed). Body fixed size and correct aspect ratio; only exhaust length scales with path.
 let rocketImageCanvas = null;
-const ROCKET_BODY_FRAC = 0.38;
+const ROCKET_BODY_FRAC = 0.35;
 const ROCKET_BODY_DISPLAY_H = 56;
 
 function loadRocketImage() {
@@ -586,10 +586,12 @@ function drawRocket(ctx, from, to, boardEl) {
   const exhaustDispW = bodyDispW;
   const exhaustLen = Math.max(20, pathLen - bodyDispH);
 
-  const angle = Math.atan2(a.y - b.y, a.x - b.x);
+  // Nose must point UP (toward destination b). Exhaust trails DOWN toward launch a.
+  // So (0,1) in rotated frame = direction (a - b), i.e. from b to a.
+  const angle = Math.atan2(b.x - a.x, a.y - b.y);
 
   ctx.save();
-  // 1. Exhaust: from bottom of body (at b) down toward a. Only length varies; width matches body.
+  // 1. Exhaust: from bottom of body (at b) down toward a.
   ctx.translate(b.x, b.y);
   ctx.rotate(angle);
   ctx.drawImage(
@@ -600,7 +602,7 @@ function drawRocket(ctx, from, to, boardEl) {
   ctx.restore();
 
   ctx.save();
-  // 2. Body: fixed size with correct aspect ratio (no squashing), nose at b.
+  // 2. Body: nose at b, pointing up. Draw so image top (nose) is at -bodyDispH.
   ctx.translate(b.x, b.y);
   ctx.rotate(angle);
   ctx.drawImage(
