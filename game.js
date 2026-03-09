@@ -658,6 +658,8 @@ function drawMeteor(ctx, from, to, boardEl) {
   const a = getSquareCenter(from, boardEl);
   const b = getSquareCenter(to, boardEl);
 
+  // Tail length = path from start square to stop square (only variable we change)
+  const pathLen = Math.hypot(b.x - a.x, b.y - a.y);
   const cpOffset = (b.x - a.x) * 0.3 - 20;
   const cp1x = a.x + cpOffset;
   const cp1y = a.y + (b.y - a.y) * 0.3;
@@ -666,7 +668,6 @@ function drawMeteor(ctx, from, to, boardEl) {
 
   ctx.save();
 
-  // Curve from meteor head (a) to impact (b) for tail
   const curve = (t) => {
     const mt = 1 - t;
     const mt2 = mt * mt, mt3 = mt2 * mt;
@@ -678,25 +679,27 @@ function drawMeteor(ctx, from, to, boardEl) {
   };
 
   const pts = [];
-  for (let t = 0; t <= 1; t += 0.025) pts.push(curve(t));
+  for (let t = 0; t <= 1; t += 0.02) pts.push(curve(t));
   const dx = b.x - a.x, dy = b.y - a.y;
   const perp = Math.sqrt(dx * dx + dy * dy) || 1;
   const nx = -dy / perp, ny = dx / perp;
 
-  // Tail: wispy, white near body → slightly golden → fade (distinct from rocket orange/red)
+  // Tail width: broad near body, tapers and goes wispy toward end (scale slightly with path length so short tails don't look stubby)
+  const tailScale = Math.min(1.2, 0.5 + pathLen / 400);
   const tailWidth = (i) => {
     const t = i / pts.length;
-    const taper = 1 - t * 0.92;
-    const wave = Math.sin(i * 0.4) * 1.5 + Math.sin(i * 0.7 + 1) * 1;
-    return (14 + wave) * taper;
+    const taper = 1 - t * 0.95;
+    const wave = Math.sin(i * 0.35) * 2 + Math.sin(i * 0.6 + 1) * 1.5;
+    return (16 + wave) * taper * tailScale;
   };
+
+  // Reference image tail: bright white + light blue → pink/magenta → purple/violet diffuse
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
     const w = tailWidth(i);
     const p = pts[i];
-    const x = p.x + nx * w, y = p.y + ny * w;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    if (i === 0) ctx.moveTo(p.x + nx * w, p.y + ny * w);
+    else ctx.lineTo(p.x + nx * w, p.y + ny * w);
   }
   for (let i = pts.length - 1; i >= 0; i--) {
     const w = tailWidth(i);
@@ -705,83 +708,98 @@ function drawMeteor(ctx, from, to, boardEl) {
   }
   ctx.closePath();
   const tailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  tailGrad.addColorStop(0, "rgba(255, 255, 255, 0.85)");
-  tailGrad.addColorStop(0.08, "rgba(255, 252, 240, 0.75)");
-  tailGrad.addColorStop(0.25, "rgba(255, 248, 220, 0.5)");
-  tailGrad.addColorStop(0.5, "rgba(241, 219, 160, 0.35)");
-  tailGrad.addColorStop(0.75, "rgba(245, 222, 179, 0.15)");
-  tailGrad.addColorStop(1, "rgba(255, 248, 220, 0)");
+  tailGrad.addColorStop(0, "rgba(255, 255, 255, 0.95)");
+  tailGrad.addColorStop(0.05, "rgba(240, 248, 255, 0.9)");
+  tailGrad.addColorStop(0.12, "rgba(230, 242, 255, 0.85)");
+  tailGrad.addColorStop(0.22, "rgba(255, 182, 193, 0.8)");
+  tailGrad.addColorStop(0.35, "rgba(255, 105, 180, 0.75)");
+  tailGrad.addColorStop(0.5, "rgba(218, 112, 214, 0.65)");
+  tailGrad.addColorStop(0.68, "rgba(147, 112, 219, 0.5)");
+  tailGrad.addColorStop(0.82, "rgba(138, 43, 226, 0.3)");
+  tailGrad.addColorStop(0.95, "rgba(75, 0, 130, 0.12)");
+  tailGrad.addColorStop(1, "rgba(72, 61, 139, 0)");
   ctx.fillStyle = tailGrad;
   ctx.fill();
 
-  // Outer soft glow along tail
+  // Outer wispy glow along tail (same color progression, softer)
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
     const t = i / pts.length;
-    const w = (18 + Math.sin(i * 0.3) * 2) * (1 - t * 0.9);
+    const w = (22 + Math.sin(i * 0.3) * 2) * (1 - t * 0.92) * tailScale;
     const p = pts[i];
     if (i === 0) ctx.moveTo(p.x + nx * w, p.y + ny * w);
     else ctx.lineTo(p.x + nx * w, p.y + ny * w);
   }
   for (let i = pts.length - 1; i >= 0; i--) {
     const t = i / pts.length;
-    const w = (18 + Math.sin(i * 0.3 + 2) * 2) * (1 - t * 0.9);
+    const w = (22 + Math.sin(i * 0.3 + 2) * 2) * (1 - t * 0.92) * tailScale;
     const p = pts[i];
     ctx.lineTo(p.x - nx * w, p.y - ny * w);
   }
   ctx.closePath();
   const glowGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  glowGrad.addColorStop(0, "rgba(255, 248, 220, 0.2)");
-  glowGrad.addColorStop(0.4, "rgba(245, 222, 179, 0.08)");
-  glowGrad.addColorStop(1, "rgba(255, 248, 220, 0)");
+  glowGrad.addColorStop(0, "rgba(255, 255, 255, 0.25)");
+  glowGrad.addColorStop(0.15, "rgba(230, 242, 255, 0.15)");
+  glowGrad.addColorStop(0.35, "rgba(255, 182, 193, 0.12)");
+  glowGrad.addColorStop(0.55, "rgba(218, 112, 214, 0.08)");
+  glowGrad.addColorStop(0.75, "rgba(138, 43, 226, 0.05)");
+  glowGrad.addColorStop(1, "rgba(72, 61, 139, 0)");
   ctx.fillStyle = glowGrad;
   ctx.fill();
 
-  // Meteor body: prominent yellow/orange glowing sphere (like reference image)
+  // Meteor body: reference image — yellow/orange sphere, hints of red, reddish-orange aura at edges blending into tail
   const cx = a.x, cy = a.y;
-  const rOuter = 16;
-  const rAura = 13;
-  const rCore = 10;
+  const rOuter = 18;
+  const rAura = 14;
+  const rCore = 11;
   const rInner = 7;
   ctx.beginPath();
   ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 200, 100, 0.25)";
+  const outerAura = ctx.createRadialGradient(cx, cy, rCore, cx, cy, rOuter);
+  outerAura.addColorStop(0, "rgba(255, 140, 80, 0.35)");
+  outerAura.addColorStop(0.5, "rgba(255, 100, 50, 0.2)");
+  outerAura.addColorStop(1, "rgba(220, 60, 40, 0.05)");
+  ctx.fillStyle = outerAura;
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy, rAura, 0, Math.PI * 2);
   const auraGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rAura);
-  auraGrad.addColorStop(0, "rgba(255, 220, 120, 0.5)");
-  auraGrad.addColorStop(0.5, "rgba(255, 180, 80, 0.35)");
-  auraGrad.addColorStop(1, "rgba(230, 140, 50, 0.1)");
+  auraGrad.addColorStop(0, "rgba(255, 230, 180, 0.9)");
+  auraGrad.addColorStop(0.25, "rgba(255, 200, 100, 0.85)");
+  auraGrad.addColorStop(0.5, "rgba(255, 165, 50, 0.8)");
+  auraGrad.addColorStop(0.75, "rgba(255, 120, 60, 0.5)");
+  auraGrad.addColorStop(1, "rgba(220, 80, 50, 0.15)");
   ctx.fillStyle = auraGrad;
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy, rCore, 0, Math.PI * 2);
-  const coreGrad = ctx.createRadialGradient(cx - 2, cy - 2, 0, cx, cy, rCore);
-  coreGrad.addColorStop(0, "#fff5cc");
-  coreGrad.addColorStop(0.4, "#ffdd66");
-  coreGrad.addColorStop(0.7, "#f1c40f");
-  coreGrad.addColorStop(1, "#e6a020");
+  const coreGrad = ctx.createRadialGradient(cx - 2, cy - 1, 0, cx, cy, rCore);
+  coreGrad.addColorStop(0, "#fff8dc");
+  coreGrad.addColorStop(0.2, "#ffef99");
+  coreGrad.addColorStop(0.45, "#ffcc33");
+  coreGrad.addColorStop(0.7, "#ff9933");
+  coreGrad.addColorStop(0.9, "#e67300");
+  coreGrad.addColorStop(1, "#cc5500");
   ctx.fillStyle = coreGrad;
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+  ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
   ctx.fill();
   ctx.beginPath();
   ctx.arc(cx, cy, rCore, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255, 220, 140, 0.6)";
+  ctx.strokeStyle = "rgba(255, 180, 100, 0.7)";
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Impact at destination: soft golden glow
+  // Impact at destination: subtle purple/violet fade (tail end)
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 12, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 235, 180, 0.25)";
+  ctx.arc(b.x, b.y, 10, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(147, 112, 219, 0.2)";
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(241, 219, 160, 0.4)";
+  ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(138, 43, 226, 0.25)";
   ctx.fill();
 
   ctx.restore();
