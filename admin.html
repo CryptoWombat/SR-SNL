@@ -152,6 +152,19 @@
       white-space: nowrap;
     }
 
+    .editor-row input[type="color"] {
+      width: 44px;
+      height: 28px;
+      padding: 2px;
+      cursor: pointer;
+    }
+
+    .color-hex {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
     .editor-row select,
     .editor-row input,
     .editor-row textarea {
@@ -428,6 +441,47 @@
         </div>
       </section>
 
+      <!-- Design & Theme -->
+      <section id="design-section">
+        <h2>DESIGN &amp; THEME</h2>
+        <p class="form-hint">Customize heading, colors, and turn markers. Changes apply to the main game.</p>
+        <div class="editor-row">
+          <label>Heading text:</label>
+          <input type="text" id="design-heading" placeholder="SPACE RACE - Rockets and Meteors">
+        </div>
+        <div class="editor-row">
+          <label>Accent (title, buttons):</label>
+          <input type="color" id="design-accent" value="#ffcc00">
+          <span id="design-accent-hex" class="color-hex">#ffcc00</span>
+        </div>
+        <div class="editor-row">
+          <label>USSR (red) color:</label>
+          <input type="color" id="design-ussr" value="#e74c3c">
+          <span id="design-ussr-hex" class="color-hex">#e74c3c</span>
+        </div>
+        <div class="editor-row">
+          <label>USA (blue) color:</label>
+          <input type="color" id="design-usa" value="#3498db">
+          <span id="design-usa-hex" class="color-hex">#3498db</span>
+        </div>
+        <h3 style="margin-top:14px; font-size:0.95rem;">Turn markers (Mission Control rockets)</h3>
+        <div class="editor-row">
+          <label>USSR rocket:</label>
+          <input type="color" id="design-turn-ussr" value="#cc2222">
+          <span id="design-turn-ussr-hex" class="color-hex">#cc2222</span>
+        </div>
+        <div class="editor-row">
+          <label>USA rocket:</label>
+          <input type="color" id="design-turn-usa" value="#2266cc">
+          <span id="design-turn-usa-hex" class="color-hex">#2266cc</span>
+        </div>
+        <div class="editor-row">
+          <label>Legend labels (comma-separated):</label>
+          <input type="text" id="design-legend" placeholder="USSR Achievement, USSR Setback, USA Achievement, USA Setback, Neutral">
+        </div>
+        <button type="button" class="btn btn-save-sq" id="design-save-btn">SAVE DESIGN</button>
+      </section>
+
       <!-- Rockets & Meteors -->
       <section>
         <h2>ROCKETS &amp; METEORS</h2>
@@ -544,13 +598,38 @@
       }
     }
 
+    function getDesignFromForm() {
+      return {
+        headingText: (document.getElementById("design-heading") && document.getElementById("design-heading").value.trim()) || "SPACE RACE - Rockets and Meteors",
+        accentColor: (document.getElementById("design-accent") && document.getElementById("design-accent").value) || "#ffcc00",
+        ussrColor: (document.getElementById("design-ussr") && document.getElementById("design-ussr").value) || "#e74c3c",
+        usaColor: (document.getElementById("design-usa") && document.getElementById("design-usa").value) || "#3498db",
+        turnMarkerUssrColor: (document.getElementById("design-turn-ussr") && document.getElementById("design-turn-ussr").value) || "#cc2222",
+        turnMarkerUsaColor: (document.getElementById("design-turn-usa") && document.getElementById("design-turn-usa").value) || "#2266cc",
+        legendLabels: (document.getElementById("design-legend") && document.getElementById("design-legend").value.trim()) || ""
+      };
+    }
+
+    function setDesignToForm(d) {
+      if (!d) return;
+      const id = (x) => document.getElementById(x);
+      if (d.headingText && id("design-heading")) id("design-heading").value = d.headingText;
+      if (d.accentColor && id("design-accent")) { id("design-accent").value = d.accentColor; if (id("design-accent-hex")) id("design-accent-hex").textContent = d.accentColor; }
+      if (d.ussrColor && id("design-ussr")) { id("design-ussr").value = d.ussrColor; if (id("design-ussr-hex")) id("design-ussr-hex").textContent = d.ussrColor; }
+      if (d.usaColor && id("design-usa")) { id("design-usa").value = d.usaColor; if (id("design-usa-hex")) id("design-usa-hex").textContent = d.usaColor; }
+      if (d.turnMarkerUssrColor && id("design-turn-ussr")) { id("design-turn-ussr").value = d.turnMarkerUssrColor; if (id("design-turn-ussr-hex")) id("design-turn-ussr-hex").textContent = d.turnMarkerUssrColor; }
+      if (d.turnMarkerUsaColor && id("design-turn-usa")) { id("design-turn-usa").value = d.turnMarkerUsaColor; if (id("design-turn-usa-hex")) id("design-turn-usa-hex").textContent = d.turnMarkerUsaColor; }
+      if (d.legendLabels != null && id("design-legend")) id("design-legend").value = d.legendLabels;
+    }
+
     async function pushConfigToAPI() {
       const pw = sessionStorage.getItem("admin_pw");
       if (!pw) { showStatus("Session expired — please reload and re-enter password.", "info"); return; }
       const payload = {
         rockets: state.rockets,
         meteors: state.meteors,
-        customSquares: customSquares
+        customSquares: customSquares,
+        design: getDesignFromForm()
       };
       try {
         const res = await fetch("/api/config", {
@@ -589,6 +668,7 @@
         if (cfg.rockets) state.rockets = cfg.rockets;
         if (cfg.meteors) state.meteors = cfg.meteors;
         if (cfg.customSquares) customSquares = cfg.customSquares;
+        if (cfg.design) setDesignToForm(cfg.design);
       } catch (e) {
         try {
           const saved = JSON.parse(localStorage.getItem("spacerace-connections"));
@@ -627,6 +707,20 @@
         state.nextMeteorId = 1;
         refreshConnections();
       }
+    });
+
+    // Design: sync color inputs to hex display
+    ["design-accent", "design-ussr", "design-usa", "design-turn-ussr", "design-turn-usa"].forEach(id => {
+      const input = document.getElementById(id);
+      const hex = document.getElementById(id + "-hex");
+      if (input && hex) {
+        input.addEventListener("input", () => { hex.textContent = input.value; });
+      }
+    });
+
+    document.getElementById("design-save-btn").addEventListener("click", () => {
+      pushConfigToAPI();
+      showStatus("Design saved! Refresh the game page to see changes.", "saved");
     });
 
     // ── Square Editor ──

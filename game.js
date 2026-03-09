@@ -229,6 +229,49 @@ function loadConnectionsFromLocal() {
   } catch (e) {}
 }
 
+function applyDesign(d) {
+  if (!d) return;
+  const root = document.documentElement;
+  if (d.headingText) {
+    const h1 = document.querySelector("header h1");
+    if (h1) h1.textContent = d.headingText;
+  }
+  if (d.accentColor) root.style.setProperty("--text-accent", d.accentColor);
+  if (d.ussrColor) {
+    root.style.setProperty("--ussr-good", d.ussrColor);
+    root.style.setProperty("--ussr-good-border", d.ussrColor);
+    root.style.setProperty("--ussr-bad-border", d.ussrColor);
+  }
+  if (d.usaColor) {
+    root.style.setProperty("--usa-good", d.usaColor);
+    root.style.setProperty("--usa-good-border", d.usaColor);
+    root.style.setProperty("--usa-bad-border", d.usaColor);
+  }
+  let styleEl = document.getElementById("design-overrides");
+  if (!styleEl) {
+    styleEl = document.createElement("style");
+    styleEl.id = "design-overrides";
+    document.head.appendChild(styleEl);
+  }
+  const u = (d.turnMarkerUssrColor || "#cc2222").replace("#", "");
+  const a = (d.turnMarkerUsaColor || "#2266cc").replace("#", "");
+  styleEl.textContent = [
+    ".player-ship .ship-ussr { filter: drop-shadow(0 0 4px rgba(" + parseInt(u.slice(0,2), 16) + "," + parseInt(u.slice(2,4), 16) + "," + parseInt(u.slice(4,6), 16) + ", 0.6)); }",
+    ".player-ship .ship-usa { filter: drop-shadow(0 0 4px rgba(" + parseInt(a.slice(0,2), 16) + "," + parseInt(a.slice(2,4), 16) + "," + parseInt(a.slice(4,6), 16) + ", 0.6)); }"
+  ].join("\n");
+  if (d.legendLabels && typeof d.legendLabels === "string") {
+    const labels = d.legendLabels.split(",").map(s => s.trim()).filter(Boolean);
+    const items = document.querySelectorAll(".legend-items .legend-item");
+    items.forEach((el, i) => {
+      if (labels[i] === undefined) return;
+      const span = el.querySelector(".legend-swatch");
+      el.textContent = "";
+      if (span) el.appendChild(span);
+      el.appendChild(document.createTextNode(" " + labels[i]));
+    });
+  }
+}
+
 async function loadConfigFromAPI() {
   try {
     const res = await fetch("/api/config");
@@ -237,6 +280,7 @@ async function loadConfigFromAPI() {
     if (cfg.rockets) state.rockets = cfg.rockets;
     if (cfg.meteors) state.meteors = cfg.meteors;
     if (cfg.customSquares) customSquares = cfg.customSquares;
+    if (cfg.design) applyDesign(cfg.design);
     return true;
   } catch (e) {
     return false;
