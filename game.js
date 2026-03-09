@@ -687,21 +687,22 @@ function drawRocket(ctx, from, to, boardEl) {
 
 function drawMeteor(ctx, from, to, boardEl) {
   if (!meteorImageCanvas) return;
+  // Meteors send you DOWN: "from" = higher square (top), "to" = lower square (bottom). Head at top, tail trails down.
   const a = getSquareCenter(from, boardEl);
   const b = getSquareCenter(to, boardEl);
   const pathLen = Math.hypot(b.x - a.x, b.y - a.y) || 1;
   const w = meteorImageCanvas.width;
   const h = meteorImageCanvas.height;
-  // Your image: meteor from lower-left (head) to upper-right (tail). Only variable we change: tail length = path length.
-  const headX = 0.15 * w, headY = 0.82 * h;
-  const tailX = 0.88 * w, tailY = 0.18 * h;
+  // In your image the bright ball (head) may be upper-right and tail trails to lower-left. Head at a (top), tail must point down to b.
+  const headX = 0.88 * w, headY = 0.18 * h;
+  const tailX = 0.15 * w, tailY = 0.82 * h;
   const meteorLengthInImage = Math.hypot(tailX - headX, tailY - headY);
   const scale = pathLen / meteorLengthInImage;
   const imageAngle = Math.atan2(tailY - headY, tailX - headX);
-  const targetAngle = Math.atan2(b.y - a.y, b.x - a.x);
+  const downAngle = Math.atan2(b.y - a.y, b.x - a.x);
   ctx.save();
   ctx.translate(a.x, a.y);
-  ctx.rotate(targetAngle - imageAngle);
+  ctx.rotate(downAngle - imageAngle);
   ctx.translate(-headX * scale, -headY * scale);
   ctx.drawImage(meteorImageCanvas, 0, 0, w, h, 0, 0, w * scale, h * scale);
   ctx.restore();
