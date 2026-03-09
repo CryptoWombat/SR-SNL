@@ -260,33 +260,35 @@ header h1 {
   box-shadow: inset 0 0 15px rgba(74, 138, 74, 0.2);
 }
 
-/* === PLAYER TOKENS === */
+/* === PLAYER TOKENS (spaceships) === */
 .token {
   position: absolute;
-  width: clamp(18px, 2.5vw, 28px);
-  height: clamp(18px, 2.5vw, 28px);
-  border-radius: 50%;
+  width: clamp(20px, 2.8vw, 32px);
+  height: clamp(24px, 3.2vw, 38px);
+  border-radius: 50% 50% 4px 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(10px, 1.4vw, 16px);
+  font-size: clamp(12px, 1.6vw, 18px);
   font-weight: bold;
   transition: left 0.4s ease, top 0.4s ease;
   z-index: 10;
   pointer-events: none;
+  /* Spaceship shape: pointed nose at top, body, slight flare at base */
+  clip-path: polygon(50% 0%, 92% 70%, 92% 100%, 50% 88%, 8% 100%, 8% 70%);
 }
 
 .token-ussr {
-  background: radial-gradient(circle at 35% 35%, #ff4444, #aa0000);
-  border: 2px solid #ff6666;
-  box-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
+  background: linear-gradient(180deg, #ff6666 0%, #cc2222 40%, #aa0000 100%);
+  border: 2px solid #ff8888;
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
   color: #ffe0e0;
 }
 
 .token-usa {
-  background: radial-gradient(circle at 35% 35%, #4488ff, #0044aa);
-  border: 2px solid #66aaff;
-  box-shadow: 0 0 10px rgba(0, 100, 255, 0.5);
+  background: linear-gradient(180deg, #66aaff 0%, #2288dd 40%, #0044aa 100%);
+  border: 2px solid #88bbff;
+  box-shadow: 0 0 12px rgba(0, 100, 255, 0.5), inset 0 1px 0 rgba(255,255,255,0.2);
   color: #e0e8ff;
 }
 
@@ -483,6 +485,27 @@ header h1 {
   padding: 14px 10px;
   border-radius: 6px;
   font-size: 1.1rem;
+}
+
+.player-ship {
+  display: block;
+  width: 24px;
+  height: 28px;
+  margin-bottom: 6px;
+  clip-path: polygon(50% 0%, 92% 70%, 92% 100%, 50% 88%, 8% 100%, 8% 70%);
+  flex-shrink: 0;
+}
+
+.player-ship-ussr {
+  background: linear-gradient(180deg, #ff6666 0%, #cc2222 40%, #aa0000 100%);
+  border: 1px solid rgba(255, 136, 136, 0.5);
+  box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+}
+
+.player-ship-usa {
+  background: linear-gradient(180deg, #66aaff 0%, #2288dd 40%, #0044aa 100%);
+  border: 1px solid rgba(136, 187, 255, 0.5);
+  box-shadow: 0 0 8px rgba(0, 100, 255, 0.3);
 }
 
 .ussr-card {
