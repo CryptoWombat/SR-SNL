@@ -473,37 +473,42 @@ function drawRocket(ctx, from, to, boardEl) {
 
   ctx.save();
 
-  // Exhaust glow
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
-  ctx.strokeStyle = "rgba(255, 165, 0, 0.15)";
-  ctx.lineWidth = 12;
-  ctx.stroke();
+  const path = new Path2D();
+  path.moveTo(a.x, a.y);
+  path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
 
-  // Trail
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
+  // Full-length exhaust glow behind
+  ctx.strokeStyle = "rgba(255, 165, 0, 0.2)";
+  ctx.lineWidth = 28;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke(path);
+
+  // Full-length rocket body (thick stroke = whole way up)
   const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
   gradient.addColorStop(0, "#ff6600");
-  gradient.addColorStop(0.5, "#ffaa00");
-  gradient.addColorStop(1, "#44cc44");
+  gradient.addColorStop(0.25, "#ff9933");
+  gradient.addColorStop(0.6, "#ffcc00");
+  gradient.addColorStop(0.85, "#c0c0c0");
+  gradient.addColorStop(1, "#ffffff");
   ctx.strokeStyle = gradient;
-  ctx.lineWidth = 3;
-  ctx.setLineDash([8, 4]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.lineWidth = 18;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke(path);
 
-  // Rocket icon at top
-  ctx.font = "18px serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("🚀", b.x, b.y);
-
-  // Launch pad dot at bottom
+  // Nose cone highlight at top (destination)
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 4, 0, Math.PI * 2);
+  ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.strokeStyle = "rgba(200,200,200,0.8)";
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Launch pad at bottom
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 5, 0, Math.PI * 2);
   ctx.fillStyle = "#ff6600";
   ctx.fill();
 
@@ -522,44 +527,49 @@ function drawMeteor(ctx, from, to, boardEl) {
 
   ctx.save();
 
-  // Fire glow
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
-  ctx.strokeStyle = "rgba(255, 50, 0, 0.15)";
-  ctx.lineWidth = 12;
-  ctx.stroke();
+  const path = new Path2D();
+  path.moveTo(a.x, a.y);
+  path.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
 
-  // Fiery trail
-  ctx.beginPath();
-  ctx.moveTo(a.x, a.y);
-  ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, b.x, b.y);
+  // Full-length fire glow behind
+  ctx.strokeStyle = "rgba(255, 50, 0, 0.25)";
+  ctx.lineWidth = 30;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke(path);
+
+  // Full-length meteor streak (bright head at top → fading tail to bottom)
   const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  gradient.addColorStop(0, "#ff2200");
-  gradient.addColorStop(0.5, "#ff4400");
-  gradient.addColorStop(1, "#882200");
+  gradient.addColorStop(0, "#ffffff");
+  gradient.addColorStop(0.08, "#ffcc00");
+  gradient.addColorStop(0.2, "#ff6600");
+  gradient.addColorStop(0.5, "#ff3300");
+  gradient.addColorStop(0.8, "#aa2200");
+  gradient.addColorStop(1, "#441100");
   ctx.strokeStyle = gradient;
-  ctx.lineWidth = 3;
-  ctx.setLineDash([6, 6]);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  ctx.lineWidth = 20;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+  ctx.stroke(path);
 
-  // Meteor icon at top (start)
-  ctx.font = "18px serif";
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillText("☄️", a.x, a.y);
-
-  // Crash dot at bottom (end)
+  // Bright meteor head at start (top)
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-  ctx.fillStyle = "#ff2200";
+  ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffffff";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(a.x, a.y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = "#ffcc00";
   ctx.fill();
 
-  // Explosion effect at landing
+  // Impact / explosion at landing (bottom)
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(255, 80, 0, 0.2)";
+  ctx.arc(b.x, b.y, 10, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 80, 0, 0.35)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
+  ctx.fillStyle = "#ff2200";
   ctx.fill();
 
   ctx.restore();
