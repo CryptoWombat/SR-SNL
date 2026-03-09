@@ -666,7 +666,7 @@ function drawMeteor(ctx, from, to, boardEl) {
 
   ctx.save();
 
-  // Sample curve for trail points
+  // Curve from meteor head (a) to impact (b) for tail
   const curve = (t) => {
     const mt = 1 - t;
     const mt2 = mt * mt, mt3 = mt2 * mt;
@@ -677,103 +677,111 @@ function drawMeteor(ctx, from, to, boardEl) {
     };
   };
 
-  // Layered flame trail (inspiration: tongues of fire, yellow → orange → red)
   const pts = [];
-  for (let t = 0; t <= 1; t += 0.02) pts.push(curve(t));
+  for (let t = 0; t <= 1; t += 0.025) pts.push(curve(t));
   const dx = b.x - a.x, dy = b.y - a.y;
   const perp = Math.sqrt(dx * dx + dy * dy) || 1;
-  let nx = -dy / perp, ny = dx / perp;
+  const nx = -dy / perp, ny = dx / perp;
 
-  // Outer glow
+  // Tail: wispy, white near body → slightly golden → fade (distinct from rocket orange/red)
+  const tailWidth = (i) => {
+    const t = i / pts.length;
+    const taper = 1 - t * 0.92;
+    const wave = Math.sin(i * 0.4) * 1.5 + Math.sin(i * 0.7 + 1) * 1;
+    return (14 + wave) * taper;
+  };
   ctx.beginPath();
   for (let i = 0; i < pts.length; i++) {
-    const w = 18 * (1 - i / pts.length * 0.85);
+    const w = tailWidth(i);
     const p = pts[i];
     const x = p.x + nx * w, y = p.y + ny * w;
     if (i === 0) ctx.moveTo(x, y);
     else ctx.lineTo(x, y);
   }
   for (let i = pts.length - 1; i >= 0; i--) {
-    const w = 18 * (1 - i / pts.length * 0.85);
-    const p = pts[i];
-    ctx.lineTo(p.x - nx * w, p.y - ny * w);
-  }
-  ctx.closePath();
-  const glowGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  glowGrad.addColorStop(0, "rgba(241, 196, 15, 0.15)");
-  glowGrad.addColorStop(0.3, "rgba(230, 126, 34, 0.2)");
-  glowGrad.addColorStop(0.7, "rgba(192, 57, 43, 0.25)");
-  glowGrad.addColorStop(1, "rgba(128, 0, 0, 0.1)");
-  ctx.fillStyle = glowGrad;
-  ctx.fill();
-
-  // Main trail with wavy edge (flame tongues)
-  ctx.beginPath();
-  for (let i = 0; i < pts.length; i++) {
-    const t = i / pts.length;
-    const w = (12 + Math.sin(i * 0.5) * 2) * (1 - t * 0.9);
-    const p = pts[i];
-    const x = p.x + nx * w, y = p.y + ny * w;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  for (let i = pts.length - 1; i >= 0; i--) {
-    const t = i / pts.length;
-    const w = (12 + Math.sin(i * 0.5 + 2) * 2) * (1 - t * 0.9);
+    const w = tailWidth(i);
     const p = pts[i];
     ctx.lineTo(p.x - nx * w, p.y - ny * w);
   }
   ctx.closePath();
   const tailGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-  tailGrad.addColorStop(0, "#f1c40f");
-  tailGrad.addColorStop(0.12, "#e67e22");
-  tailGrad.addColorStop(0.4, "#d35400");
-  tailGrad.addColorStop(0.75, "#c0392b");
-  tailGrad.addColorStop(1, "rgba(100, 20, 0, 0.6)");
+  tailGrad.addColorStop(0, "rgba(255, 255, 255, 0.85)");
+  tailGrad.addColorStop(0.08, "rgba(255, 252, 240, 0.75)");
+  tailGrad.addColorStop(0.25, "rgba(255, 248, 220, 0.5)");
+  tailGrad.addColorStop(0.5, "rgba(241, 219, 160, 0.35)");
+  tailGrad.addColorStop(0.75, "rgba(245, 222, 179, 0.15)");
+  tailGrad.addColorStop(1, "rgba(255, 248, 220, 0)");
   ctx.fillStyle = tailGrad;
   ctx.fill();
 
-  // Rocky meteor body (dark blue/purple, chunky)
+  // Outer soft glow along tail
   ctx.beginPath();
-  ctx.arc(a.x, a.y, 10, 0, Math.PI * 2);
-  ctx.fillStyle = "#2c3e50";
-  ctx.fill();
-  ctx.strokeStyle = "#1a252f";
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(a.x, a.y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "#3d5a80";
-  ctx.fill();
-  // Pitted texture (lighter spots)
-  ctx.fillStyle = "rgba(90, 120, 160, 0.7)";
-  ctx.beginPath();
-  ctx.arc(a.x - 3, a.y - 1, 2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(a.x + 4, a.y + 2, 1.5, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(a.x + 1, a.y - 3, 1, 0, Math.PI * 2);
-  ctx.fill();
-  // Bright fiery aura around rock
-  ctx.beginPath();
-  ctx.arc(a.x, a.y, 13, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(241, 196, 15, 0.35)";
+  for (let i = 0; i < pts.length; i++) {
+    const t = i / pts.length;
+    const w = (18 + Math.sin(i * 0.3) * 2) * (1 - t * 0.9);
+    const p = pts[i];
+    if (i === 0) ctx.moveTo(p.x + nx * w, p.y + ny * w);
+    else ctx.lineTo(p.x + nx * w, p.y + ny * w);
+  }
+  for (let i = pts.length - 1; i >= 0; i--) {
+    const t = i / pts.length;
+    const w = (18 + Math.sin(i * 0.3 + 2) * 2) * (1 - t * 0.9);
+    const p = pts[i];
+    ctx.lineTo(p.x - nx * w, p.y - ny * w);
+  }
+  ctx.closePath();
+  const glowGrad = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
+  glowGrad.addColorStop(0, "rgba(255, 248, 220, 0.2)");
+  glowGrad.addColorStop(0.4, "rgba(245, 222, 179, 0.08)");
+  glowGrad.addColorStop(1, "rgba(255, 248, 220, 0)");
+  ctx.fillStyle = glowGrad;
   ctx.fill();
 
-  // Impact / explosion at end
+  // Meteor body: prominent yellow/orange glowing sphere (like reference image)
+  const cx = a.x, cy = a.y;
+  const rOuter = 16;
+  const rAura = 13;
+  const rCore = 10;
+  const rInner = 7;
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 14, 0, Math.PI * 2);
-  ctx.fillStyle = "rgba(230, 126, 34, 0.3)";
+  ctx.arc(cx, cy, rOuter, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 200, 100, 0.25)";
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "#c0392b";
+  ctx.arc(cx, cy, rAura, 0, Math.PI * 2);
+  const auraGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, rAura);
+  auraGrad.addColorStop(0, "rgba(255, 220, 120, 0.5)");
+  auraGrad.addColorStop(0.5, "rgba(255, 180, 80, 0.35)");
+  auraGrad.addColorStop(1, "rgba(230, 140, 50, 0.1)");
+  ctx.fillStyle = auraGrad;
   ctx.fill();
   ctx.beginPath();
-  ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
-  ctx.fillStyle = "#e74c3c";
+  ctx.arc(cx, cy, rCore, 0, Math.PI * 2);
+  const coreGrad = ctx.createRadialGradient(cx - 2, cy - 2, 0, cx, cy, rCore);
+  coreGrad.addColorStop(0, "#fff5cc");
+  coreGrad.addColorStop(0.4, "#ffdd66");
+  coreGrad.addColorStop(0.7, "#f1c40f");
+  coreGrad.addColorStop(1, "#e6a020");
+  ctx.fillStyle = coreGrad;
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, rInner, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(cx, cy, rCore, 0, Math.PI * 2);
+  ctx.strokeStyle = "rgba(255, 220, 140, 0.6)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Impact at destination: soft golden glow
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, 12, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(255, 235, 180, 0.25)";
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
+  ctx.fillStyle = "rgba(241, 219, 160, 0.4)";
   ctx.fill();
 
   ctx.restore();
