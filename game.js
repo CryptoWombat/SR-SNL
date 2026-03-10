@@ -620,7 +620,7 @@ function updateTokenPositions() {
   const rect = board.getBoundingClientRect();
   const cellW = rect.width / 10;
   const cellH = rect.height / 10;
-  const tokenSize = Math.min(28, cellW * 0.45);
+  const tokenSize = Math.min(cellW, cellH) * 0.8;
 
   ["ussr", "usa"].forEach(pid => {
     const token = document.getElementById(`token-${pid}`);
@@ -838,7 +838,8 @@ function animateMovement(pid, from, to, callback) {
   const token = document.getElementById(`token-${pid}`);
   const rect = board.getBoundingClientRect();
   const cellW = rect.width / 10;
-  const tokenSize = Math.min(28, cellW * 0.45);
+  const cellH = rect.height / 10;
+  const tokenSize = Math.min(cellW, cellH) * 0.8;
 
   const direction = to > from ? 1 : -1;
   let current = from;
@@ -871,7 +872,8 @@ function animateDirectSlide(pid, from, to, callback) {
   const token = document.getElementById(`token-${pid}`);
   const rect = board.getBoundingClientRect();
   const cellW = rect.width / 10;
-  const tokenSize = Math.min(28, cellW * 0.45);
+  const cellH = rect.height / 10;
+  const tokenSize = Math.min(cellW, cellH) * 0.8;
 
   const startCenter = getSquareCenter(from, board);
   const endCenter = getSquareCenter(to, board);
