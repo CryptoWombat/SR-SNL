@@ -310,6 +310,7 @@ function getActionForPlayer(ev, pid) {
   if (pid === "usa" && ev.actionUSA) return ev.actionUSA;
   if (pid === "ussr" && ev.actionUSSR) return ev.actionUSSR;
   if (ev.actionUSA || ev.actionUSSR) return pid === "usa" ? (ev.actionUSA || 0) : (ev.actionUSSR || 0);
+  if (ev.action && ev.country && ev.country !== pid) return 0;
   return ev.action || 0;
 }
 
@@ -526,8 +527,8 @@ function showTooltip(e, ev) {
   const sentLabel = ev.sentiment === "good" ? "Achievement" : ev.sentiment === "bad" ? "Setback" : "";
   const dateLine = [flagLabel, ev.date].filter(Boolean).join(" — ");
   const titleLine = [ev.title, sentLabel ? `(${sentLabel})` : ""].filter(Boolean).join(" ");
-  const ttActionUSA = ev.actionUSA || (!ev.actionUSSR && ev.action ? ev.action : 0);
-  const ttActionUSSR = ev.actionUSSR || (!ev.actionUSA && ev.action ? ev.action : 0);
+  const ttActionUSA = ev.actionUSA || (ev.action && ev.country !== "ussr" ? ev.action : 0);
+  const ttActionUSSR = ev.actionUSSR || (ev.action && ev.country !== "usa" ? ev.action : 0);
   let actionLine = "";
   if (ttActionUSA) actionLine += `<div class="tt-action"><span style="color:var(--usa,#3498db)">USA</span>: ${ttActionUSA > 0 ? "⏩" : "⏪"} Move ${Math.abs(ttActionUSA)} square${Math.abs(ttActionUSA) !== 1 ? "s" : ""} ${ttActionUSA > 0 ? "forward" : "backward"}</div>`;
   if (ttActionUSSR) actionLine += `<div class="tt-action"><span style="color:var(--ussr,#e74c3c)">USSR</span>: ${ttActionUSSR > 0 ? "⏩" : "⏪"} Move ${Math.abs(ttActionUSSR)} square${Math.abs(ttActionUSSR) !== 1 ? "s" : ""} ${ttActionUSSR > 0 ? "forward" : "backward"}</div>`;

@@ -328,9 +328,17 @@ console.log("\n\x1b[36mCountry-specific actions:\x1b[0m");
   assertEqual(getActionForPlayer(evUSSROnly, "usa"), 0, "USA gets 0 when actionUSA=0");
   assertEqual(getActionForPlayer(evUSSROnly, "ussr"), -2, "USSR gets actionUSSR=-2");
 
-  const evLegacy = { action: 4 };
-  assertEqual(getActionForPlayer(evLegacy, "usa"), 4, "USA falls back to legacy action=4");
-  assertEqual(getActionForPlayer(evLegacy, "ussr"), 4, "USSR falls back to legacy action=4");
+  const evLegacyNeutral = { action: 4 };
+  assertEqual(getActionForPlayer(evLegacyNeutral, "usa"), 4, "USA gets legacy action=4 on neutral square");
+  assertEqual(getActionForPlayer(evLegacyNeutral, "ussr"), 4, "USSR gets legacy action=4 on neutral square");
+
+  const evLegacyUSSR = { action: 3, country: "ussr" };
+  assertEqual(getActionForPlayer(evLegacyUSSR, "ussr"), 3, "USSR gets legacy action=3 on USSR square");
+  assertEqual(getActionForPlayer(evLegacyUSSR, "usa"), 0, "USA gets 0 on USSR square with legacy action");
+
+  const evLegacyUSA = { action: 2, country: "usa" };
+  assertEqual(getActionForPlayer(evLegacyUSA, "usa"), 2, "USA gets legacy action=2 on USA square");
+  assertEqual(getActionForPlayer(evLegacyUSA, "ussr"), 0, "USSR gets 0 on USA square with legacy action");
 
   const evNone = { title: "No action" };
   assertEqual(getActionForPlayer(evNone, "usa"), 0, "USA gets 0 for no-action event");
