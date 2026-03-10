@@ -762,7 +762,7 @@
             ev48.desc = ev48.desc.replace("American managed", "America managed");
           }
           const ev21now = customSquares[21];
-          if (ev21now && ev21now.blank) {
+          if (ev21now && (!ev21now.desc || !ev21now.desc.trim())) {
             customSquares[21] = Object.assign({}, ev21now, {
               country: "ussr",
               sentiment: "good",

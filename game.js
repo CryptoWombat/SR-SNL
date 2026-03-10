@@ -322,7 +322,7 @@ async function loadConfigFromAPI() {
       }
       // One-off content tweak: ensure square 21 is a USSR event dated 1959
       const ev21now = customSquares[21];
-      if (ev21now && ev21now.blank) {
+      if (ev21now && (!ev21now.desc || !ev21now.desc.trim())) {
         customSquares[21] = Object.assign({}, ev21now, {
           country: "ussr",
           sentiment: "good",
@@ -569,12 +569,13 @@ function showTooltip(e, ev) {
   const flagLabel = ev.country === "ussr" ? "USSR" : ev.country === "usa" ? "USA" : "";
   const dateLine = [flagLabel, ev.date].filter(Boolean).join(" — ");
   const titleLine = ev.title || "";
-  const hasContent = dateLine || titleLine || ev.desc;
+  const bodyText = getEventText(ev);
+  const hasContent = dateLine || titleLine || bodyText;
   tooltipEl.innerHTML = hasContent
     ? `
     ${dateLine ? `<div class="tt-date">${dateLine}</div>` : ""}
     ${titleLine ? `<div class="tt-title">${titleLine}</div>` : ""}
-    ${ev.desc ? `<div class="tt-desc">${ev.desc}</div>` : ""}
+    ${bodyText ? `<div class="tt-desc">${bodyText}</div>` : ""}
   `
     : `<div class="tt-title">Square ${ev.square || ""}</div>`;
   tooltipEl.classList.remove("hidden");
