@@ -860,24 +860,10 @@ function switchTurn() {
 function updateTurnIndicator() {
   const el = document.getElementById("turn-indicator");
   if (el) {
-    if (state.currentPlayer === "ussr") {
-      el.textContent = "USSR's Turn";
-      el.className = "turn-ussr";
-    } else {
-      el.textContent = "USA's Turn";
-      el.className = "turn-usa";
-    }
+    el.textContent = state.currentPlayer === "ussr" ? "USSR's Turn" : "USA's Turn";
+    el.className = "turn-" + state.currentPlayer;
   }
-  const tint = document.getElementById("turn-tint");
-  if (tint) {
-    if (state.currentPlayer === "ussr") {
-      tint.style.background = "rgba(180, 20, 20, 0.65)";
-    } else {
-      tint.style.background = "rgba(20, 50, 180, 0.65)";
-    }
-  }
-  document.body.classList.remove("turn-ussr", "turn-usa");
-  document.body.classList.add("turn-" + state.currentPlayer);
+  document.body.style.background = state.currentPlayer === "ussr" ? "#4a1010" : "#10104a";
 }
 
 function updatePlayerInfo() {
@@ -1191,4 +1177,5 @@ async function init() {
   });
 }
 
+updateTurnIndicator();
 init();

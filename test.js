@@ -273,6 +273,21 @@ console.log("\n\x1b[36mTurn switching:\x1b[0m");
   assertEqual(state.currentPlayer, "ussr", "USA → USSR");
 })();
 
+// ── Test: Turn background (red/blue) ──
+console.log("\n\x1b[36mTurn background:\x1b[0m");
+(function() {
+  const updateTurnIndicator = window.updateTurnIndicator;
+  state.currentPlayer = "ussr";
+  updateTurnIndicator();
+  const redBg = document.body.style.background;
+  assert(redBg.includes("4a1010") || redBg === "rgb(74, 16, 16)", "USSR turn = red background");
+
+  state.currentPlayer = "usa";
+  updateTurnIndicator();
+  const blueBg = document.body.style.background;
+  assert(blueBg.includes("10104a") || blueBg === "rgb(16, 16, 74)", "USA turn = blue background");
+})();
+
 // ── Test: Connection list rendering ──
 console.log("\n\x1b[36mConnection list UI:\x1b[0m");
 (function() {
