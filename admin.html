@@ -745,7 +745,14 @@
         const cfg = await res.json();
         if (cfg.rockets) state.rockets = cfg.rockets;
         if (cfg.meteors) state.meteors = cfg.meteors;
-        if (cfg.customSquares) customSquares = cfg.customSquares;
+        if (cfg.customSquares) {
+          customSquares = cfg.customSquares;
+          if (customSquares[17] && !customSquares[16]) {
+            const ev17 = customSquares[17];
+            customSquares[16] = Object.assign({}, ev17, { square: 16 });
+            delete customSquares[17];
+          }
+        }
         if (cfg.design) setDesignToForm(cfg.design);
       } catch (e) {
         try {

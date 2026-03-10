@@ -291,7 +291,17 @@ async function loadConfigFromAPI() {
     const cfg = await res.json();
     if (cfg.rockets) state.rockets = cfg.rockets;
     if (cfg.meteors) state.meteors = cfg.meteors;
-    if (cfg.customSquares) customSquares = cfg.customSquares;
+    if (cfg.customSquares) {
+      customSquares = cfg.customSquares;
+      // One-off content tweak: move the Luna 1 event from square 17 → 16
+      // so that 17 can be neutral. If 16 already has custom content we
+      // leave it alone.
+      if (customSquares[17] && !customSquares[16]) {
+        const ev17 = customSquares[17];
+        customSquares[16] = Object.assign({}, ev17, { square: 16 });
+        delete customSquares[17];
+      }
+    }
     if (cfg.design) applyDesign(cfg.design);
     return true;
   } catch (e) {
