@@ -868,6 +868,14 @@ function updateTurnIndicator() {
       el.className = "turn-usa";
     }
   }
+  const tint = document.getElementById("turn-tint");
+  if (tint) {
+    if (state.currentPlayer === "ussr") {
+      tint.style.background = "rgba(180, 20, 20, 0.65)";
+    } else {
+      tint.style.background = "rgba(20, 50, 180, 0.65)";
+    }
+  }
   document.body.classList.remove("turn-ussr", "turn-usa");
   document.body.classList.add("turn-" + state.currentPlayer);
 }
