@@ -542,9 +542,8 @@ const tooltipEl = document.getElementById("tooltip");
 function showTooltip(e, ev) {
   if (ev && ev.blank) return;
   const flagLabel = ev.country === "ussr" ? "USSR" : ev.country === "usa" ? "USA" : "";
-  const sentLabel = ev.sentiment === "good" ? "Achievement" : ev.sentiment === "bad" ? "Setback" : "";
   const dateLine = [flagLabel, ev.date].filter(Boolean).join(" — ");
-  const titleLine = [ev.title, sentLabel ? `(${sentLabel})` : ""].filter(Boolean).join(" ");
+  const titleLine = ev.title || "";
   const hasContent = dateLine || titleLine || ev.desc;
   tooltipEl.innerHTML = hasContent
     ? `
