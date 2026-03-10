@@ -156,6 +156,18 @@ console.log("\n\x1b[36mgetSquareCenter (rocket/meteor positioning):\x1b[0m");
   assert(near(c46.x, 5 * cellW + cellW / 2) && near(c46.y, 5 * cellH + cellH / 2), "Sq 46 at correct position");
 })();
 
+// ── Test: Landing message format (date + desc) ──
+console.log("\n\x1b[36mLanding message (date + desc):\x1b[0m");
+(function() {
+  const getSquareData = window.getSquareData;
+  const ev6 = getSquareData(6);
+  const ev3 = getSquareData(3);
+  const msg6 = (ev6.date ? ev6.date + ", " : "") + (ev6.desc || ev6.title);
+  const msg3 = (ev3.date ? ev3.date + ", " : "") + (ev3.desc || ev3.title);
+  assert(msg6.includes("Nov 3, 1957") && msg6.includes("Laika"), "Sq 6 shows date + full desc");
+  assert(msg3.includes("Oct 4, 1957") && msg3.includes("first artificial satellite"), "Sq 3 shows date + full desc");
+})();
+
 // ── Test: Event data ──
 console.log("\n\x1b[36mEvent data:\x1b[0m");
 (function() {

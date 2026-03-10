@@ -744,8 +744,9 @@ function handleMove(steps) {
         const actionDest = target + ev.action;
         const clampedDest = Math.max(1, Math.min(100, actionDest));
         const dir = ev.action > 0 ? "forward" : "backward";
-        const msg = ev.title
-          ? `Landed on: ${ev.title} — Move ${Math.abs(ev.action)} ${dir}!`
+        const base = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title || "");
+        const msg = base
+          ? `${base} — Move ${Math.abs(ev.action)} ${dir}!`
           : `Square effect: Move ${Math.abs(ev.action)} ${dir}!`;
         showMessage(msg);
         setTimeout(() => {
@@ -757,8 +758,9 @@ function handleMove(steps) {
             finishTurn();
           });
         }, 600);
-      } else if (ev && ev.title) {
-        showMessage(`Landed on: ${ev.title}${ev.date ? ` (${ev.date})` : ""}`);
+      } else if (ev && (ev.desc || ev.title)) {
+        const msg = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title);
+        showMessage(msg);
         finishTurn();
       } else {
         showMessage(`${player.name} moves to square ${target}.`);
