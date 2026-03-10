@@ -484,28 +484,34 @@
           <label>Legend labels (comma-separated):</label>
           <input type="text" id="design-legend" placeholder="USSR, USA, Neutral">
         </div>
-        <h3 style="margin-top:14px; font-size:0.95rem;">Mission Control labels</h3>
+        <button type="button" class="btn btn-save-sq" id="design-save-btn">SAVE DESIGN</button>
+      </section>
+
+      <!-- Mission Control Labels -->
+      <section id="mission-control-section">
+        <h2>MISSION CONTROL LABELS</h2>
+        <p class="form-hint">Edit the text shown on the main game's side panel. Fix typos here. Click SAVE DESIGN to apply.</p>
         <div class="editor-row">
-          <label>Panel title:</label>
-          <input type="text" id="design-mission-control" placeholder="MISSION CONTROL">
+          <label>Panel title (e.g. MISSION CONTROL):</label>
+          <input type="text" id="design-mission-control" placeholder="MISSION CONTROL" value="MISSION CONTROL">
         </div>
         <div class="editor-row">
-          <label>Dice button:</label>
-          <input type="text" id="design-launch-dice" placeholder="LAUNCH DICE">
+          <label>Dice button (e.g. LAUNCH DICE):</label>
+          <input type="text" id="design-launch-dice" placeholder="LAUNCH DICE" value="LAUNCH DICE">
         </div>
         <div class="editor-row">
           <label>Legend title:</label>
-          <input type="text" id="design-legend-title" placeholder="LEGEND">
+          <input type="text" id="design-legend-title" placeholder="LEGEND" value="LEGEND">
         </div>
         <div class="editor-row">
           <label>New game button:</label>
-          <input type="text" id="design-new-game" placeholder="NEW GAME">
+          <input type="text" id="design-new-game" placeholder="NEW GAME" value="NEW GAME">
         </div>
         <div class="editor-row">
           <label>Play again button:</label>
-          <input type="text" id="design-play-again" placeholder="PLAY AGAIN">
+          <input type="text" id="design-play-again" placeholder="PLAY AGAIN" value="PLAY AGAIN">
         </div>
-        <button type="button" class="btn btn-save-sq" id="design-save-btn">SAVE DESIGN</button>
+        <button type="button" class="btn btn-save-sq" id="mission-control-save-btn">SAVE DESIGN</button>
       </section>
 
       <!-- Rockets & Meteors -->
@@ -783,6 +789,10 @@
     document.getElementById("design-save-btn").addEventListener("click", () => {
       pushConfigToAPI();
       showStatus("Design saved! Refresh the game page to see changes.", "saved");
+    });
+    document.getElementById("mission-control-save-btn").addEventListener("click", () => {
+      pushConfigToAPI();
+      showStatus("Mission Control labels saved! Refresh the game page to see changes.", "saved");
     });
 
     // ── Square Editor ──

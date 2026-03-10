@@ -262,25 +262,25 @@ function applyDesign(d) {
       el.appendChild(document.createTextNode(" " + labels[i]));
     });
   }
-  if (d.missionControlTitle != null) {
+  if (d.missionControlTitle && d.missionControlTitle.trim()) {
     const el = document.getElementById("mission-control-title");
-    if (el) el.textContent = d.missionControlTitle;
+    if (el) el.textContent = d.missionControlTitle.trim();
   }
-  if (d.launchDiceButton != null) {
+  if (d.launchDiceButton && d.launchDiceButton.trim()) {
     const el = document.getElementById("roll-btn");
-    if (el) el.textContent = d.launchDiceButton;
+    if (el) el.textContent = d.launchDiceButton.trim();
   }
-  if (d.legendTitle != null) {
+  if (d.legendTitle && d.legendTitle.trim()) {
     const el = document.getElementById("legend-title");
-    if (el) el.textContent = d.legendTitle;
+    if (el) el.textContent = d.legendTitle.trim();
   }
-  if (d.newGameButton != null) {
+  if (d.newGameButton && d.newGameButton.trim()) {
     const el = document.getElementById("reset-btn");
-    if (el) el.textContent = d.newGameButton;
+    if (el) el.textContent = d.newGameButton.trim();
   }
-  if (d.playAgainButton != null) {
+  if (d.playAgainButton && d.playAgainButton.trim()) {
     const el = document.getElementById("play-again-btn");
-    if (el) el.textContent = d.playAgainButton;
+    if (el) el.textContent = d.playAgainButton.trim();
   }
 }
 
