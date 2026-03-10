@@ -483,18 +483,6 @@ function buildBoard() {
         cell.appendChild(yearSpan);
       }
 
-      const aUSA = ev && (ev.actionUSA || (ev.action && ev.country !== "ussr" ? ev.action : 0));
-      const aUSSR = ev && (ev.actionUSSR || (ev.action && ev.country !== "usa" ? ev.action : 0));
-      if (aUSA || aUSSR) {
-        const actionSpan = document.createElement("span");
-        actionSpan.className = "cell-icon cell-action-icons";
-        let icons = "";
-        if (aUSA) icons += '<span class="action-flag action-usa">' + (aUSA > 0 ? "⏩" : "⏪") + '</span>';
-        if (aUSSR) icons += '<span class="action-flag action-ussr">' + (aUSSR > 0 ? "⏩" : "⏪") + '</span>';
-        actionSpan.innerHTML = icons;
-        cell.appendChild(actionSpan);
-      }
-
       if (ev) {
         cell.addEventListener("mouseenter", (e) => showTooltip(e, ev));
         cell.addEventListener("mousemove", moveTooltip);
@@ -527,12 +515,7 @@ function showTooltip(e, ev) {
   const sentLabel = ev.sentiment === "good" ? "Achievement" : ev.sentiment === "bad" ? "Setback" : "";
   const dateLine = [flagLabel, ev.date].filter(Boolean).join(" — ");
   const titleLine = [ev.title, sentLabel ? `(${sentLabel})` : ""].filter(Boolean).join(" ");
-  const ttActionUSA = ev.actionUSA || (ev.action && ev.country !== "ussr" ? ev.action : 0);
-  const ttActionUSSR = ev.actionUSSR || (ev.action && ev.country !== "usa" ? ev.action : 0);
-  let actionLine = "";
-  if (ttActionUSA) actionLine += `<div class="tt-action"><span style="color:var(--usa,#3498db)">USA</span>: ${ttActionUSA > 0 ? "⏩" : "⏪"} Move ${Math.abs(ttActionUSA)} square${Math.abs(ttActionUSA) !== 1 ? "s" : ""} ${ttActionUSA > 0 ? "forward" : "backward"}</div>`;
-  if (ttActionUSSR) actionLine += `<div class="tt-action"><span style="color:var(--ussr,#e74c3c)">USSR</span>: ${ttActionUSSR > 0 ? "⏩" : "⏪"} Move ${Math.abs(ttActionUSSR)} square${Math.abs(ttActionUSSR) !== 1 ? "s" : ""} ${ttActionUSSR > 0 ? "forward" : "backward"}</div>`;
-  const hasContent = dateLine || titleLine || ev.desc || actionLine;
+  const hasContent = dateLine || titleLine || ev.desc;
   tooltipEl.innerHTML = hasContent
     ? `
     ${dateLine ? `<div class="tt-date">${dateLine}</div>` : ""}
