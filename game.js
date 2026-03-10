@@ -309,6 +309,11 @@ async function loadConfigFromAPI() {
         customSquares[22] = Object.assign({}, ev21, { square: 22 });
         delete customSquares[21];
       }
+      // One-off typo fix: “American managed” → “America managed” on square 48
+      const ev48 = customSquares[48];
+      if (ev48 && typeof ev48.desc === "string") {
+        ev48.desc = ev48.desc.replace("American managed", "America managed");
+      }
     }
     if (cfg.design) applyDesign(cfg.design);
     return true;
