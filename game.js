@@ -337,6 +337,11 @@ function getActionForPlayer(ev, pid) {
   return ev.action || 0;
 }
 
+function getEventText(ev) {
+  if (!ev) return "";
+  return ev.desc || ev.title || "";
+}
+
 // ── Game State ────────────────────────────────────────────────────────
 
 const state = {
@@ -788,7 +793,7 @@ function handleMove(steps) {
         const actionDest = target + actionVal;
         const clampedDest = Math.max(1, Math.min(100, actionDest));
         const dir = actionVal > 0 ? "forward" : "backward";
-        const base = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title || "");
+        const base = getEventText(ev);
         showMessage(base ? `${base} — Move ${Math.abs(actionVal)} ${dir}!` : `Square effect: Move ${Math.abs(actionVal)} ${dir}!`);
         setTimeout(() => {
           animateMovement(pid, target, clampedDest, () => {
@@ -800,7 +805,7 @@ function handleMove(steps) {
           });
         }, 600);
       } else if (ev && !ev.blank && (ev.desc || ev.title)) {
-        showMessage((ev.date ? ev.date + ", " : "") + (ev.desc || ev.title));
+        showMessage(getEventText(ev));
         finishTurn();
       } else {
         showMessage(`${player.name} moves to square ${target}.`);

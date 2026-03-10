@@ -68,6 +68,7 @@ const switchTurn = window.switchTurn;
 const renderConnectionsList = window.renderConnectionsList;
 const endGame = window.endGame;
 const gameObj = window.game;
+const getEventText = window.getEventText;
 
 let passed = 0;
 let failed = 0;
@@ -182,6 +183,20 @@ console.log("\n\x1b[36mEvent data:\x1b[0m");
   assertEqual(eventMap[100].title, "Apollo 11 — Moon Landing!", "eventMap[100] = Apollo 11");
   assertEqual(eventMap[42].title, "Yuri Gagarin — First Human in Space", "eventMap[42] = Gagarin");
   assertEqual(eventMap[51].title, "Valentina Tereshkova — First Woman in Space", "eventMap[51] = Tereshkova");
+})();
+
+// ── Test: Mission Control text formatting (no leading year) ──
+console.log("\n\x1b[36mMission Control text formatting:\x1b[0m");
+(function() {
+  const sample = {
+    year: "1957",
+    date: "1957",
+    title: "Sputnik 1",
+    desc: "October 4, 1957, the Soviet Union launch Sputnik 1 into space and becomes the first artificial satellite to orbit the Earth."
+  };
+  const txt = getEventText(sample);
+  assert(!txt.startsWith("1957"), "Event text does not start with leading year");
+  assert(txt.startsWith("October 4, 1957"), "Event text starts with full human-readable date");
 })();
 
 // ── Test: Event squares validity ──
