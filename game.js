@@ -521,7 +521,6 @@ function showTooltip(e, ev) {
     ${dateLine ? `<div class="tt-date">${dateLine}</div>` : ""}
     ${titleLine ? `<div class="tt-title">${titleLine}</div>` : ""}
     ${ev.desc ? `<div class="tt-desc">${ev.desc}</div>` : ""}
-    ${actionLine}
   `
     : `<div class="tt-title">Square ${ev.square || ""}</div>`;
   tooltipEl.classList.remove("hidden");
