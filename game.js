@@ -262,6 +262,26 @@ function applyDesign(d) {
       el.appendChild(document.createTextNode(" " + labels[i]));
     });
   }
+  if (d.missionControlTitle != null) {
+    const el = document.getElementById("mission-control-title");
+    if (el) el.textContent = d.missionControlTitle;
+  }
+  if (d.launchDiceButton != null) {
+    const el = document.getElementById("roll-btn");
+    if (el) el.textContent = d.launchDiceButton;
+  }
+  if (d.legendTitle != null) {
+    const el = document.getElementById("legend-title");
+    if (el) el.textContent = d.legendTitle;
+  }
+  if (d.newGameButton != null) {
+    const el = document.getElementById("reset-btn");
+    if (el) el.textContent = d.newGameButton;
+  }
+  if (d.playAgainButton != null) {
+    const el = document.getElementById("play-again-btn");
+    if (el) el.textContent = d.playAgainButton;
+  }
 }
 
 async function loadConfigFromAPI() {
@@ -718,7 +738,6 @@ function handleMove(steps) {
     const meteor = state.meteors.find(m => m.from === target);
 
     if (rocket) {
-      clearEventInfo();
       showMessage(`🚀 ROCKET LAUNCH! ${player.name} blasts from ${target} to ${rocket.to}!`);
       setTimeout(() => {
         animateDirectSlide(pid, target, rocket.to, () => {
@@ -730,7 +749,6 @@ function handleMove(steps) {
         });
       }, 600);
     } else if (meteor) {
-      clearEventInfo();
       showMessage(`☄️ METEOR STRIKE! ${player.name} crashes from ${target} down to ${meteor.to}!`);
       setTimeout(() => {
         animateDirectSlide(pid, target, meteor.to, () => {
@@ -747,7 +765,6 @@ function handleMove(steps) {
         const clampedDest = Math.max(1, Math.min(100, actionDest));
         const dir = ev.action > 0 ? "forward" : "backward";
         const base = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title || "");
-        showEventInfo(target, ev);
         showMessage(base ? `${base} — Move ${Math.abs(ev.action)} ${dir}!` : `Square effect: Move ${Math.abs(ev.action)} ${dir}!`);
         setTimeout(() => {
           animateMovement(pid, target, clampedDest, () => {
@@ -759,11 +776,9 @@ function handleMove(steps) {
           });
         }, 600);
       } else if (ev && (ev.desc || ev.title)) {
-        showEventInfo(target, ev);
         showMessage((ev.date ? ev.date + ", " : "") + (ev.desc || ev.title));
         finishTurn();
       } else {
-        clearEventInfo();
         showMessage(`${player.name} moves to square ${target}.`);
         finishTurn();
       }
@@ -1015,28 +1030,6 @@ function showMessage(text) {
   messageEl.textContent = text;
 }
 
-function showEventInfo(squareNum, ev) {
-  const el = document.getElementById("event-info");
-  if (!el) return;
-  const data = eventMap[squareNum] || ev || null;
-  if (!data || (!data.desc && !data.title)) {
-    el.textContent = "";
-    el.style.display = "none";
-    return;
-  }
-  el.style.display = "block";
-  const text = (data.date ? data.date + ", " : "") + (data.desc || data.title);
-  el.textContent = text;
-}
-
-function clearEventInfo() {
-  const el = document.getElementById("event-info");
-  if (el) {
-    el.textContent = "";
-    el.style.display = "none";
-  }
-}
-
 // ── Control Panel: Rockets & Meteors ──────────────────────────────────
 
 const tabBtns = document.querySelectorAll(".tab-btn");
@@ -1166,7 +1159,6 @@ const game = {
     document.getElementById("winner-overlay").classList.add("hidden");
     const confetti = document.getElementById("confetti-canvas");
     if (confetti) confetti.remove();
-    clearEventInfo();
     updateTurnIndicator();
     updatePlayerInfo();
     createTokens();

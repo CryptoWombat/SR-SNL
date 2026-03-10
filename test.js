@@ -156,20 +156,6 @@ console.log("\n\x1b[36mgetSquareCenter (rocket/meteor positioning):\x1b[0m");
   assert(near(c46.x, 5 * cellW + cellW / 2) && near(c46.y, 5 * cellH + cellH / 2), "Sq 46 at correct position");
 })();
 
-// ── Test: Event info display (eventMap date + desc) ──
-console.log("\n\x1b[36mEvent info (eventMap date + desc):\x1b[0m");
-(function() {
-  const showEventInfo = window.showEventInfo;
-  const eventInfoEl = document.getElementById("event-info");
-  if (!eventInfoEl) return;
-  showEventInfo(6, null);
-  assert(eventInfoEl.style.display !== "none" && eventInfoEl.textContent.includes("Laika"), "Sq 6 event-info shows Laika desc");
-  showEventInfo(3, null);
-  assert(eventInfoEl.textContent.includes("first artificial satellite"), "Sq 3 event-info shows Sputnik 1 desc");
-  window.clearEventInfo();
-  assert(eventInfoEl.textContent === "" && eventInfoEl.style.display === "none", "clearEventInfo clears and hides");
-})();
-
 // ── Test: Event data ──
 console.log("\n\x1b[36mEvent data:\x1b[0m");
 (function() {

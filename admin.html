@@ -484,6 +484,27 @@
           <label>Legend labels (comma-separated):</label>
           <input type="text" id="design-legend" placeholder="USSR, USA, Neutral">
         </div>
+        <h3 style="margin-top:14px; font-size:0.95rem;">Mission Control labels</h3>
+        <div class="editor-row">
+          <label>Panel title:</label>
+          <input type="text" id="design-mission-control" placeholder="MISSION CONTROL">
+        </div>
+        <div class="editor-row">
+          <label>Dice button:</label>
+          <input type="text" id="design-launch-dice" placeholder="LAUNCH DICE">
+        </div>
+        <div class="editor-row">
+          <label>Legend title:</label>
+          <input type="text" id="design-legend-title" placeholder="LEGEND">
+        </div>
+        <div class="editor-row">
+          <label>New game button:</label>
+          <input type="text" id="design-new-game" placeholder="NEW GAME">
+        </div>
+        <div class="editor-row">
+          <label>Play again button:</label>
+          <input type="text" id="design-play-again" placeholder="PLAY AGAIN">
+        </div>
         <button type="button" class="btn btn-save-sq" id="design-save-btn">SAVE DESIGN</button>
       </section>
 
@@ -611,7 +632,12 @@
         usaColor: (document.getElementById("design-usa") && document.getElementById("design-usa").value) || "#3498db",
         turnMarkerUssrColor: (document.getElementById("design-turn-ussr") && document.getElementById("design-turn-ussr").value) || "#cc2222",
         turnMarkerUsaColor: (document.getElementById("design-turn-usa") && document.getElementById("design-turn-usa").value) || "#2266cc",
-        legendLabels: (document.getElementById("design-legend") && document.getElementById("design-legend").value.trim()) || ""
+        legendLabels: (document.getElementById("design-legend") && document.getElementById("design-legend").value.trim()) || "",
+        missionControlTitle: (document.getElementById("design-mission-control") && document.getElementById("design-mission-control").value.trim()) || "",
+        launchDiceButton: (document.getElementById("design-launch-dice") && document.getElementById("design-launch-dice").value.trim()) || "",
+        legendTitle: (document.getElementById("design-legend-title") && document.getElementById("design-legend-title").value.trim()) || "",
+        newGameButton: (document.getElementById("design-new-game") && document.getElementById("design-new-game").value.trim()) || "",
+        playAgainButton: (document.getElementById("design-play-again") && document.getElementById("design-play-again").value.trim()) || ""
       };
     }
 
@@ -625,6 +651,11 @@
       if (d.turnMarkerUssrColor && id("design-turn-ussr")) { id("design-turn-ussr").value = d.turnMarkerUssrColor; if (id("design-turn-ussr-hex")) id("design-turn-ussr-hex").textContent = d.turnMarkerUssrColor; }
       if (d.turnMarkerUsaColor && id("design-turn-usa")) { id("design-turn-usa").value = d.turnMarkerUsaColor; if (id("design-turn-usa-hex")) id("design-turn-usa-hex").textContent = d.turnMarkerUsaColor; }
       if (d.legendLabels != null && id("design-legend")) id("design-legend").value = d.legendLabels;
+      if (d.missionControlTitle != null && id("design-mission-control")) id("design-mission-control").value = d.missionControlTitle || "";
+      if (d.launchDiceButton != null && id("design-launch-dice")) id("design-launch-dice").value = d.launchDiceButton || "";
+      if (d.legendTitle != null && id("design-legend-title")) id("design-legend-title").value = d.legendTitle || "";
+      if (d.newGameButton != null && id("design-new-game")) id("design-new-game").value = d.newGameButton || "";
+      if (d.playAgainButton != null && id("design-play-again")) id("design-play-again").value = d.playAgainButton || "";
     }
 
     function saveToLocalStorage(payload) {
