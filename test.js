@@ -210,6 +210,18 @@ console.log("\n\x1b[36mBoard DOM:\x1b[0m");
   assertEqual(Math.max(...squareNums), 100, "Max square is 100");
 })();
 
+// ── Test: Neutral override renders as neutral ──
+console.log("\n\x1b[36mNeutral override rendering:\x1b[0m");
+(function() {
+  const buildBoard = window.buildBoard;
+  window.customSquares[18] = { square: 18, country: "", year: "1959", date: "1959", title: "Luna 1", desc: "Test" };
+  buildBoard();
+  const cell18 = document.querySelector('.cell[data-square="18"]');
+  assert(cell18.classList.contains("cell-neutral"), "Sq 18 overridden to neutral renders cell-neutral");
+  delete window.customSquares[18];
+  buildBoard();
+})();
+
 // ── Test: Cell classes ──
 console.log("\n\x1b[36mCell classification:\x1b[0m");
 (function() {
