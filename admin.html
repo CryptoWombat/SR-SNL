@@ -752,6 +752,11 @@
             customSquares[16] = Object.assign({}, ev17, { square: 16 });
             delete customSquares[17];
           }
+          if (customSquares[21] && !customSquares[22]) {
+            const ev21 = customSquares[21];
+            customSquares[22] = Object.assign({}, ev21, { square: 22 });
+            delete customSquares[21];
+          }
         }
         if (cfg.design) setDesignToForm(cfg.design);
       } catch (e) {

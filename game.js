@@ -42,7 +42,7 @@ const SPACE_EVENTS = [
     desc: "The first cosmic rocket. It overshot the Moon and became the first man-made object to orbit the Sun."
   },
   {
-    square: 21, date: "Apr 9, 1959", year: "1959",
+    square: 22, date: "Apr 9, 1959", year: "1959",
     country: "usa", sentiment: "good",
     title: "Mercury 7 Selected",
     desc: "NASA selected the first astronaut group for Project Mercury — the famous Mercury 7."
@@ -300,6 +300,14 @@ async function loadConfigFromAPI() {
         const ev17 = customSquares[17];
         customSquares[16] = Object.assign({}, ev17, { square: 16 });
         delete customSquares[17];
+      }
+      // One-off content tweak: move the Mercury 7 event from square 21 → 22
+      // so that 21 can be neutral. If 22 already has custom content we
+      // leave it alone.
+      if (customSquares[21] && !customSquares[22]) {
+        const ev21 = customSquares[21];
+        customSquares[22] = Object.assign({}, ev21, { square: 22 });
+        delete customSquares[21];
       }
     }
     if (cfg.design) applyDesign(cfg.design);
