@@ -42,6 +42,12 @@ const SPACE_EVENTS = [
     desc: "The first cosmic rocket. It overshot the Moon and became the first man-made object to orbit the Sun."
   },
   {
+    square: 21, date: "1959", year: "1959",
+    country: "ussr", sentiment: "good",
+    title: "",
+    desc: ""
+  },
+  {
     square: 22, date: "Apr 9, 1959", year: "1959",
     country: "usa", sentiment: "good",
     title: "Mercury 7 Selected",

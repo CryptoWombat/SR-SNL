@@ -162,7 +162,7 @@ console.log("\n\x1b[36mgetSquareCenter (rocket/meteor positioning):\x1b[0m");
 // ── Test: Event data ──
 console.log("\n\x1b[36mEvent data:\x1b[0m");
 (function() {
-  assertEqual(SPACE_EVENTS.length, 33, "33 space events loaded");
+  assertEqual(SPACE_EVENTS.length, 34, "34 space events loaded");
 
   const countries = new Set(SPACE_EVENTS.map(e => e.country));
   assert(countries.has("ussr"), "Events include USSR");
@@ -171,7 +171,7 @@ console.log("\n\x1b[36mEvent data:\x1b[0m");
 
   const ussrEvents = SPACE_EVENTS.filter(e => e.country === "ussr");
   const usaEvents = SPACE_EVENTS.filter(e => e.country === "usa");
-  assert(ussrEvents.length === 16, `USSR has 16 events (got ${ussrEvents.length})`);
+  assert(ussrEvents.length === 17, `USSR has 17 events (got ${ussrEvents.length})`);
   assert(usaEvents.length === 17, `USA has 17 events (got ${usaEvents.length})`);
 
   const badUssr = SPACE_EVENTS.filter(e => e.country === "ussr" && e.sentiment === "bad");
