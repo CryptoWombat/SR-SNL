@@ -439,10 +439,14 @@
             <textarea id="sq-desc" placeholder="Event description..."></textarea>
           </div>
           <div class="editor-row">
-            <label>Action:</label>
-            <input type="number" id="sq-action" placeholder="0" min="-99" max="99">
+            <label>Action <span style="color:var(--usa,#3498db)">USA</span>:</label>
+            <input type="number" id="sq-action-usa" placeholder="0" min="-99" max="99">
           </div>
-          <p class="form-hint" style="margin-top:2px;">Positive = move forward, negative = move backward, 0 = none</p>
+          <div class="editor-row">
+            <label>Action <span style="color:var(--ussr,#e74c3c)">USSR</span>:</label>
+            <input type="number" id="sq-action-ussr" placeholder="0" min="-99" max="99">
+          </div>
+          <p class="form-hint" style="margin-top:2px;">Positive = move forward, negative = move backward, 0 = none. Set per country — e.g. USA +2 and USSR 0 means only USA moves.</p>
           <div class="editor-actions">
             <button class="btn btn-save-sq" id="sq-save-btn">SAVE SQUARE</button>
             <button class="btn btn-clear-sq" id="sq-clear-btn">RESET TO DEFAULT</button>
@@ -810,7 +814,8 @@
     const sqYear = document.getElementById("sq-year");
     const sqTitle = document.getElementById("sq-title");
     const sqDesc = document.getElementById("sq-desc");
-    const sqAction = document.getElementById("sq-action");
+    const sqActionUSA = document.getElementById("sq-action-usa");
+    const sqActionUSSR = document.getElementById("sq-action-ussr");
 
     function selectSquare(sq) {
       document.querySelectorAll(".cell.selected-cell").forEach(c => c.classList.remove("selected-cell"));
@@ -829,7 +834,8 @@
       sqYear.value = (data && data.year) || "";
       sqTitle.value = (data && data.title) || "";
       sqDesc.value = (data && data.desc) || "";
-      sqAction.value = (data && data.action) || "";
+      sqActionUSA.value = (data && data.actionUSA) || (data && !data.actionUSSR && data.action) || "";
+      sqActionUSSR.value = (data && data.actionUSSR) || (data && !data.actionUSA && data.action) || "";
     }
 
     // Save square
@@ -842,9 +848,10 @@
       const year = sqYear.value.trim();
       const title = sqTitle.value.trim();
       const desc = sqDesc.value.trim();
-      const action = parseInt(sqAction.value) || 0;
+      const actionUSA = parseInt(sqActionUSA.value) || 0;
+      const actionUSSR = parseInt(sqActionUSSR.value) || 0;
 
-      if (!country && !date && !year && !title && !desc && !action) {
+      if (!country && !date && !year && !title && !desc && !actionUSA && !actionUSSR) {
         delete customSquares[selectedSquare];
       } else {
         customSquares[selectedSquare] = {
@@ -855,7 +862,8 @@
           date: date || year,
           title: title,
           desc: desc,
-          action: action
+          actionUSA: actionUSA,
+          actionUSSR: actionUSSR
         };
       }
 

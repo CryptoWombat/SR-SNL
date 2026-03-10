@@ -47,6 +47,7 @@ const modifiedJS = gameJS
 const wrappedJS = gameJS
   .replace("const SPACE_EVENTS", "window.SPACE_EVENTS")
   .replace("const eventMap", "window.eventMap")
+  .replace("let customSquares", "window.customSquares")
   .replace("const state", "window.state")
   .replace("const game =", "window.game =");
 
@@ -308,6 +309,55 @@ console.log("\n\x1b[36mConnection list UI:\x1b[0m");
   state.rockets = [];
   state.meteors = [];
   renderConnectionsList();
+})();
+
+// ── Test: Country-specific actions (getActionForPlayer) ──
+console.log("\n\x1b[36mCountry-specific actions:\x1b[0m");
+(function() {
+  const getActionForPlayer = window.getActionForPlayer;
+
+  const evBoth = { actionUSA: 2, actionUSSR: -3 };
+  assertEqual(getActionForPlayer(evBoth, "usa"), 2, "USA gets actionUSA=2");
+  assertEqual(getActionForPlayer(evBoth, "ussr"), -3, "USSR gets actionUSSR=-3");
+
+  const evUSAOnly = { actionUSA: 5, actionUSSR: 0 };
+  assertEqual(getActionForPlayer(evUSAOnly, "usa"), 5, "USA gets actionUSA=5 when USSR=0");
+  assertEqual(getActionForPlayer(evUSAOnly, "ussr"), 0, "USSR gets 0 when actionUSSR=0");
+
+  const evUSSROnly = { actionUSA: 0, actionUSSR: -2 };
+  assertEqual(getActionForPlayer(evUSSROnly, "usa"), 0, "USA gets 0 when actionUSA=0");
+  assertEqual(getActionForPlayer(evUSSROnly, "ussr"), -2, "USSR gets actionUSSR=-2");
+
+  const evLegacy = { action: 4 };
+  assertEqual(getActionForPlayer(evLegacy, "usa"), 4, "USA falls back to legacy action=4");
+  assertEqual(getActionForPlayer(evLegacy, "ussr"), 4, "USSR falls back to legacy action=4");
+
+  const evNone = { title: "No action" };
+  assertEqual(getActionForPlayer(evNone, "usa"), 0, "USA gets 0 for no-action event");
+  assertEqual(getActionForPlayer(evNone, "ussr"), 0, "USSR gets 0 for no-action event");
+
+  assertEqual(getActionForPlayer(null, "usa"), 0, "null event returns 0");
+})();
+
+// ── Test: Country-specific actions in customSquares ──
+console.log("\n\x1b[36mCustom square country actions (integration):\x1b[0m");
+(function() {
+  const getSquareData = window.getSquareData;
+  const getActionForPlayer = window.getActionForPlayer;
+
+  window.customSquares[50] = {
+    square: 50, country: "usa", sentiment: "good",
+    title: "Test USA square", desc: "Only USA moves",
+    actionUSA: 3, actionUSSR: 0
+  };
+
+  const data = getSquareData(50);
+  assertEqual(data.actionUSA, 3, "Custom sq 50 has actionUSA=3");
+  assertEqual(data.actionUSSR, 0, "Custom sq 50 has actionUSSR=0");
+  assertEqual(getActionForPlayer(data, "usa"), 3, "USA player gets +3 on sq 50");
+  assertEqual(getActionForPlayer(data, "ussr"), 0, "USSR player gets 0 on sq 50");
+
+  delete window.customSquares[50];
 })();
 
 // ── Test: Reset ──

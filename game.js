@@ -305,6 +305,14 @@ function getSquareData(n) {
   return null;
 }
 
+function getActionForPlayer(ev, pid) {
+  if (!ev) return 0;
+  if (pid === "usa" && ev.actionUSA) return ev.actionUSA;
+  if (pid === "ussr" && ev.actionUSSR) return ev.actionUSSR;
+  if (ev.actionUSA || ev.actionUSSR) return pid === "usa" ? (ev.actionUSA || 0) : (ev.actionUSSR || 0);
+  return ev.action || 0;
+}
+
 // ── Game State ────────────────────────────────────────────────────────
 
 const state = {
@@ -474,10 +482,15 @@ function buildBoard() {
         cell.appendChild(yearSpan);
       }
 
-      if (ev && ev.action) {
+      const aUSA = ev && (ev.actionUSA || (ev.action && ev.country !== "ussr" ? ev.action : 0));
+      const aUSSR = ev && (ev.actionUSSR || (ev.action && ev.country !== "usa" ? ev.action : 0));
+      if (aUSA || aUSSR) {
         const actionSpan = document.createElement("span");
-        actionSpan.className = "cell-icon";
-        actionSpan.textContent = ev.action > 0 ? "⏩" : "⏪";
+        actionSpan.className = "cell-icon cell-action-icons";
+        let icons = "";
+        if (aUSA) icons += '<span class="action-flag action-usa">' + (aUSA > 0 ? "⏩" : "⏪") + '</span>';
+        if (aUSSR) icons += '<span class="action-flag action-ussr">' + (aUSSR > 0 ? "⏩" : "⏪") + '</span>';
+        actionSpan.innerHTML = icons;
         cell.appendChild(actionSpan);
       }
 
@@ -513,9 +526,11 @@ function showTooltip(e, ev) {
   const sentLabel = ev.sentiment === "good" ? "Achievement" : ev.sentiment === "bad" ? "Setback" : "";
   const dateLine = [flagLabel, ev.date].filter(Boolean).join(" — ");
   const titleLine = [ev.title, sentLabel ? `(${sentLabel})` : ""].filter(Boolean).join(" ");
-  const actionLine = ev.action
-    ? `<div class="tt-action">${ev.action > 0 ? "⏩" : "⏪"} Move ${Math.abs(ev.action)} square${Math.abs(ev.action) !== 1 ? "s" : ""} ${ev.action > 0 ? "forward" : "backward"}</div>`
-    : "";
+  const ttActionUSA = ev.actionUSA || (!ev.actionUSSR && ev.action ? ev.action : 0);
+  const ttActionUSSR = ev.actionUSSR || (!ev.actionUSA && ev.action ? ev.action : 0);
+  let actionLine = "";
+  if (ttActionUSA) actionLine += `<div class="tt-action"><span style="color:var(--usa,#3498db)">USA</span>: ${ttActionUSA > 0 ? "⏩" : "⏪"} Move ${Math.abs(ttActionUSA)} square${Math.abs(ttActionUSA) !== 1 ? "s" : ""} ${ttActionUSA > 0 ? "forward" : "backward"}</div>`;
+  if (ttActionUSSR) actionLine += `<div class="tt-action"><span style="color:var(--ussr,#e74c3c)">USSR</span>: ${ttActionUSSR > 0 ? "⏩" : "⏪"} Move ${Math.abs(ttActionUSSR)} square${Math.abs(ttActionUSSR) !== 1 ? "s" : ""} ${ttActionUSSR > 0 ? "forward" : "backward"}</div>`;
   const hasContent = dateLine || titleLine || ev.desc || actionLine;
   tooltipEl.innerHTML = hasContent
     ? `
@@ -760,12 +775,13 @@ function handleMove(steps) {
       }, 600);
     } else {
       const ev = getSquareData(target);
-      if (ev && ev.action) {
-        const actionDest = target + ev.action;
+      const actionVal = ev ? getActionForPlayer(ev, pid) : 0;
+      if (actionVal) {
+        const actionDest = target + actionVal;
         const clampedDest = Math.max(1, Math.min(100, actionDest));
-        const dir = ev.action > 0 ? "forward" : "backward";
+        const dir = actionVal > 0 ? "forward" : "backward";
         const base = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title || "");
-        showMessage(base ? `${base} — Move ${Math.abs(ev.action)} ${dir}!` : `Square effect: Move ${Math.abs(ev.action)} ${dir}!`);
+        showMessage(base ? `${base} — Move ${Math.abs(actionVal)} ${dir}!` : `Square effect: Move ${Math.abs(actionVal)} ${dir}!`);
         setTimeout(() => {
           animateMovement(pid, target, clampedDest, () => {
             player.pos = clampedDest;
