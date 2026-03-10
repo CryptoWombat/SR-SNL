@@ -358,7 +358,13 @@ function getActionForPlayer(ev, pid) {
 
 function getEventText(ev) {
   if (!ev) return "";
-  return ev.desc || ev.title || "";
+  // If there's a custom description, prefer that.
+  if (ev.desc && ev.desc.trim()) return ev.desc.trim();
+  // For square 21 specifically, fall back to our Luna 1 sentence.
+  if (ev.square === 21) {
+    return "Luna 1 became the first man-made object to orbit the Sun.";
+  }
+  return ev.title || "";
 }
 
 // ── Game State ────────────────────────────────────────────────────────
@@ -620,7 +626,7 @@ function updateTokenPositions() {
   const rect = board.getBoundingClientRect();
   const cellW = rect.width / 10;
   const cellH = rect.height / 10;
-  const tokenSize = Math.min(cellW, cellH) * 0.8;
+  const tokenSize = Math.min(cellW, cellH) * 0.65;
 
   ["ussr", "usa"].forEach(pid => {
     const token = document.getElementById(`token-${pid}`);
@@ -839,7 +845,7 @@ function animateMovement(pid, from, to, callback) {
   const rect = board.getBoundingClientRect();
   const cellW = rect.width / 10;
   const cellH = rect.height / 10;
-  const tokenSize = Math.min(cellW, cellH) * 0.8;
+  const tokenSize = Math.min(cellW, cellH) * 0.65;
 
   const direction = to > from ? 1 : -1;
   let current = from;
@@ -873,7 +879,7 @@ function animateDirectSlide(pid, from, to, callback) {
   const rect = board.getBoundingClientRect();
   const cellW = rect.width / 10;
   const cellH = rect.height / 10;
-  const tokenSize = Math.min(cellW, cellH) * 0.8;
+  const tokenSize = Math.min(cellW, cellH) * 0.65;
 
   const startCenter = getSquareCenter(from, board);
   const endCenter = getSquareCenter(to, board);
