@@ -747,7 +747,7 @@ function handleMove(steps) {
         const clampedDest = Math.max(1, Math.min(100, actionDest));
         const dir = ev.action > 0 ? "forward" : "backward";
         const base = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title || "");
-        showEventInfo(ev);
+        showEventInfo(target, ev);
         showMessage(base ? `${base} — Move ${Math.abs(ev.action)} ${dir}!` : `Square effect: Move ${Math.abs(ev.action)} ${dir}!`);
         setTimeout(() => {
           animateMovement(pid, target, clampedDest, () => {
@@ -759,7 +759,7 @@ function handleMove(steps) {
           });
         }, 600);
       } else if (ev && (ev.desc || ev.title)) {
-        showEventInfo(ev);
+        showEventInfo(target, ev);
         showMessage((ev.date ? ev.date + ", " : "") + (ev.desc || ev.title));
         finishTurn();
       } else {
@@ -1015,20 +1015,26 @@ function showMessage(text) {
   messageEl.textContent = text;
 }
 
-function showEventInfo(ev) {
+function showEventInfo(squareNum, ev) {
   const el = document.getElementById("event-info");
   if (!el) return;
-  if (!ev || (!ev.desc && !ev.title)) {
+  const data = eventMap[squareNum] || ev || null;
+  if (!data || (!data.desc && !data.title)) {
     el.textContent = "";
+    el.style.display = "none";
     return;
   }
-  const text = (ev.date ? ev.date + ", " : "") + (ev.desc || ev.title);
+  el.style.display = "block";
+  const text = (data.date ? data.date + ", " : "") + (data.desc || data.title);
   el.textContent = text;
 }
 
 function clearEventInfo() {
   const el = document.getElementById("event-info");
-  if (el) el.textContent = "";
+  if (el) {
+    el.textContent = "";
+    el.style.display = "none";
+  }
 }
 
 // ── Control Panel: Rockets & Meteors ──────────────────────────────────
