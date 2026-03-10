@@ -524,6 +524,14 @@ console.log("\n\x1b[36mEnd game messages:\x1b[0m");
   const winnerTextEl = document.getElementById("winner-text");
   const winnerSubEl = document.getElementById("winner-sub");
   const overlay = document.getElementById("winner-overlay");
+  let usaConfetti = 0;
+  let ussrConfetti = 0;
+  const realLaunchConfetti = window.launchConfetti;
+  window.launchConfetti = function(winnerId) {
+    if (winnerId === "usa") usaConfetti++;
+    if (winnerId === "ussr") ussrConfetti++;
+    if (realLaunchConfetti) realLaunchConfetti(winnerId);
+  };
 
   // USA wins
   state.players.usa.icon = "🚀";
@@ -536,6 +544,7 @@ console.log("\n\x1b[36mEnd game messages:\x1b[0m");
     "America lands on the Moon first!",
     "USA winner subtext correct"
   );
+  assertEqual(usaConfetti, 1, "Confetti fired once for USA win");
 
   // Reset overlay hidden for next check
   overlay.classList.add("hidden");
@@ -552,6 +561,8 @@ console.log("\n\x1b[36mEnd game messages:\x1b[0m");
     "You were so close to walking on the Moon but you see that the United States have passed you and reached the Moon first. Better luck next time.",
     "USSR winner subtext correct"
   );
+  assertEqual(ussrConfetti, 0, "No confetti fired for USSR win");
+  window.launchConfetti = realLaunchConfetti;
 })();
 
 // ── Summary ──
