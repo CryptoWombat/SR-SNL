@@ -780,6 +780,21 @@ header h1 {
   border-radius: 4px;
 }
 
+/* === EVENT INFO (landed on square - full description) === */
+.event-info {
+  min-height: 60px;
+  padding: 10px 12px;
+  margin: 8px 0;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--panel-border);
+  border-radius: 6px;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
 /* === RESPONSIVE === */
 
 /* Tablets and smaller desktops */
