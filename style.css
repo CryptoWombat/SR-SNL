@@ -37,6 +37,15 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   position: relative;
+  transition: background 0.4s ease;
+}
+
+body.turn-ussr {
+  background: #150a0a;
+}
+
+body.turn-usa {
+  background: #0a0a1f;
 }
 
 /* Starfield backgrounds */

@@ -862,9 +862,13 @@ function updateTurnIndicator() {
   if (state.currentPlayer === "ussr") {
     el.textContent = "USSR's Turn";
     el.className = "turn-ussr";
+    document.body.classList.remove("turn-usa");
+    document.body.classList.add("turn-ussr");
   } else {
     el.textContent = "USA's Turn";
     el.className = "turn-usa";
+    document.body.classList.remove("turn-ussr");
+    document.body.classList.add("turn-usa");
   }
 }
 
@@ -1171,6 +1175,7 @@ async function init() {
   renderConnectionsList();
   loadMeteorImage();
   loadRocketImage();
+  updateTurnIndicator();
 
   window.addEventListener("resize", () => {
     drawConnections();
