@@ -761,6 +761,18 @@
           if (ev48 && typeof ev48.desc === "string") {
             ev48.desc = ev48.desc.replace("American managed", "America managed");
           }
+          const ev21now = customSquares[21];
+          if (ev21now && ev21now.blank) {
+            customSquares[21] = Object.assign({}, ev21now, {
+              country: "ussr",
+              sentiment: "good",
+              blank: false,
+              year: "1959",
+              date: "1959",
+              title: "Luna 1 Orbits the Sun",
+              desc: "Luna 1 became the first man-made object to orbit the Sun."
+            });
+          }
         }
         if (cfg.design) setDesignToForm(cfg.design);
       } catch (e) {

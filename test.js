@@ -183,6 +183,7 @@ console.log("\n\x1b[36mEvent data:\x1b[0m");
   assertEqual(eventMap[100].title, "Apollo 11 — Moon Landing!", "eventMap[100] = Apollo 11");
   assertEqual(eventMap[42].title, "Yuri Gagarin — First Human in Space", "eventMap[42] = Gagarin");
   assertEqual(eventMap[51].title, "Valentina Tereshkova — First Woman in Space", "eventMap[51] = Tereshkova");
+  assertEqual(eventMap[21].desc, "Luna 1 became the first man-made object to orbit the Sun.", "eventMap[21] description set for USSR 1959 square");
 })();
 
 // ── Test: Mission Control text formatting (no leading year) ──
