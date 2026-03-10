@@ -870,16 +870,7 @@
       const actionUSA = parseInt(sqActionUSA.value) || 0;
       const actionUSSR = parseInt(sqActionUSSR.value) || 0;
 
-      // Special case: allow overriding an existing colored square to Neutral without forcing admins
-      // to also re-enter the title/description. Without this, leaving fields blank would delete
-      // the override and the square would revert to its default (non-neutral) country.
-      const isNeutralOverrideOnly =
-        !country &&
-        !date && !year && !title && !desc &&
-        !actionUSA && !actionUSSR &&
-        base && base.country;
-
-      if (!country && !date && !year && !title && !desc && !actionUSA && !actionUSSR && !isNeutralOverrideOnly) {
+      if (!country && !date && !year && !title && !desc && !actionUSA && !actionUSSR && !blank) {
         delete customSquares[selectedSquare];
       } else {
         customSquares[selectedSquare] = {
@@ -887,10 +878,10 @@
           country: country || "",
           sentiment: country ? sentiment : "",
           blank: blank ? true : undefined,
-          year: blank ? "" : ((year || date) || base.year || ""),
-          date: blank ? "" : ((date || year) || base.date || ""),
-          title: blank ? "" : (title || base.title || ""),
-          desc: blank ? "" : (desc || base.desc || ""),
+          year: blank ? "" : (year || date),
+          date: blank ? "" : (date || year),
+          title: blank ? "" : title,
+          desc: blank ? "" : desc,
           actionUSA: actionUSA,
           actionUSSR: actionUSSR
         };
