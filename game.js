@@ -44,7 +44,7 @@ const SPACE_EVENTS = [
   {
     square: 21, date: "1959", year: "1959",
     country: "ussr", sentiment: "good",
-    title: "Luna 1 Orbits the Sun",
+    title: "Luna 1",
     desc: "Luna 1 became the first man-made object to orbit the Sun."
   },
   {
@@ -329,7 +329,7 @@ async function loadConfigFromAPI() {
           blank: false,
           year: "1959",
           date: "1959",
-          title: "Luna 1 Orbits the Sun",
+          title: "Luna 1",
           desc: "Luna 1 became the first man-made object to orbit the Sun."
         });
       }
