@@ -41,11 +41,11 @@ body {
 }
 
 body.turn-ussr {
-  background: #6b2525;
+  background: #5a1818;
 }
 
 body.turn-usa {
-  background: #25256b;
+  background: #18185a;
 }
 
 #turn-tint {
@@ -59,11 +59,11 @@ body.turn-usa {
 }
 
 body.turn-ussr #turn-tint {
-  background: rgba(180, 50, 50, 0.45);
+  background: rgba(160, 30, 30, 0.5);
 }
 
 body.turn-usa #turn-tint {
-  background: rgba(50, 80, 180, 0.45);
+  background: rgba(30, 50, 160, 0.5);
 }
 
 /* Starfield backgrounds */
@@ -222,6 +222,7 @@ header h1 {
   font-weight: 700;
   font-size: clamp(0.75rem, 1.4vw, 0.95rem);
   opacity: 0.9;
+  color: #ffffff;
 }
 
 .cell-year {

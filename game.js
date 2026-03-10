@@ -859,17 +859,17 @@ function switchTurn() {
 
 function updateTurnIndicator() {
   const el = document.getElementById("turn-indicator");
-  if (state.currentPlayer === "ussr") {
-    el.textContent = "USSR's Turn";
-    el.className = "turn-ussr";
-    document.body.classList.remove("turn-usa");
-    document.body.classList.add("turn-ussr");
-  } else {
-    el.textContent = "USA's Turn";
-    el.className = "turn-usa";
-    document.body.classList.remove("turn-ussr");
-    document.body.classList.add("turn-usa");
+  if (el) {
+    if (state.currentPlayer === "ussr") {
+      el.textContent = "USSR's Turn";
+      el.className = "turn-ussr";
+    } else {
+      el.textContent = "USA's Turn";
+      el.className = "turn-usa";
+    }
   }
+  document.body.classList.remove("turn-ussr", "turn-usa");
+  document.body.classList.add("turn-" + state.currentPlayer);
 }
 
 function updatePlayerInfo() {
