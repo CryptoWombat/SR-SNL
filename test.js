@@ -368,6 +368,106 @@ console.log("\n\x1b[36mCustom square country actions (integration):\x1b[0m");
   delete window.customSquares[50];
 })();
 
+// ── Test: Simulated game — handleMove with country-specific actions ──
+console.log("\n\x1b[36mSimulated game (handleMove with country actions):\x1b[0m");
+await (async function() {
+  const handleMove = window.handleMove;
+  const buildBoard = window.buildBoard;
+
+  // Patch setTimeout to fire instantly — makes all animations synchronous
+  const realSetTimeout = window.setTimeout;
+  window.setTimeout = function(fn, _delay) { fn(); return 0; };
+
+  // --- Setup: USSR square with legacy action (old saved data format) ---
+  window.customSquares[3] = {
+    square: 3, country: "ussr", sentiment: "good",
+    title: "Sputnik 1", desc: "USSR achievement",
+    action: 2
+  };
+
+  // --- Setup: USA square with legacy action ---
+  window.customSquares[9] = {
+    square: 9, country: "usa", sentiment: "good",
+    title: "Explorer 1", desc: "USA achievement",
+    action: 3
+  };
+
+  // --- Setup: square with new per-country actions ---
+  window.customSquares[15] = {
+    square: 15, country: "usa", sentiment: "good",
+    title: "Project SCORE", desc: "USA comms satellite",
+    actionUSA: 2, actionUSSR: 0
+  };
+
+  // --- Setup: neutral square with legacy action (should affect both) ---
+  window.customSquares[5] = {
+    square: 5, country: "", sentiment: "",
+    title: "Neutral event", desc: "Affects everyone",
+    action: 1
+  };
+
+  buildBoard();
+
+  function runMove(pid, startPos, otherPid, otherPos, diceRoll) {
+    state.players[pid].pos = startPos;
+    state.players[otherPid].pos = otherPos;
+    state.currentPlayer = pid;
+    state.rolling = true;
+    state.gameOver = false;
+    document.getElementById("roll-btn").disabled = true;
+    handleMove(diceRoll);
+  }
+
+  // ── Scenario 1: USA lands on USSR square (sq 3, legacy action: 2) ──
+  // USA should NOT move forward — it's a USSR square.
+  runMove("usa", 1, "ussr", 1, 2);
+  assertEqual(state.players.usa.pos, 3, "Scenario 1: USA lands on USSR sq 3, stays at 3 (no forward move)");
+  assert(state.currentPlayer === "ussr", "Scenario 1: Turn passed to USSR");
+
+  // ── Scenario 2: USSR lands on USSR square (sq 3, legacy action: 2) ──
+  // USSR SHOULD move forward 2 → end up at 5.
+  runMove("ussr", 1, "usa", 3, 2);
+  assertEqual(state.players.ussr.pos, 5, "Scenario 2: USSR lands on USSR sq 3, moves forward to 5");
+  assert(state.currentPlayer === "usa", "Scenario 2: Turn passed to USA");
+
+  // ── Scenario 3: USSR lands on USA square (sq 9, legacy action: 3) ──
+  // USSR should NOT move forward — it's a USA square.
+  runMove("ussr", 5, "usa", 3, 4);
+  assertEqual(state.players.ussr.pos, 9, "Scenario 3: USSR lands on USA sq 9, stays at 9 (no forward move)");
+
+  // ── Scenario 4: USA lands on USA square (sq 9, legacy action: 3) ──
+  // USA SHOULD move forward 3 → end up at 12.
+  runMove("usa", 5, "ussr", 9, 4);
+  assertEqual(state.players.usa.pos, 12, "Scenario 4: USA lands on USA sq 9, moves forward to 12");
+
+  // ── Scenario 5: USA lands on sq 15 (new format: actionUSA=2, actionUSSR=0) ──
+  // USA moves forward 2 → 17.
+  runMove("usa", 12, "ussr", 9, 3);
+  assertEqual(state.players.usa.pos, 17, "Scenario 5: USA lands on sq 15, moves forward to 17 (actionUSA=2)");
+
+  // ── Scenario 6: USSR lands on sq 15 (new format: actionUSA=2, actionUSSR=0) ──
+  // USSR stays at 15 — actionUSSR is 0.
+  runMove("ussr", 12, "usa", 17, 3);
+  assertEqual(state.players.ussr.pos, 15, "Scenario 6: USSR lands on sq 15, stays at 15 (actionUSSR=0)");
+
+  // ── Scenario 7: USA lands on neutral sq 5 (legacy action: 1, no country) ──
+  // Both players should be affected by neutral squares.
+  runMove("usa", 2, "ussr", 15, 3);
+  assertEqual(state.players.usa.pos, 6, "Scenario 7: USA on neutral sq 5, moves forward to 6 (action=1)");
+
+  // ── Scenario 8: USSR lands on neutral sq 5 (legacy action: 1, no country) ──
+  runMove("ussr", 2, "usa", 6, 3);
+  assertEqual(state.players.ussr.pos, 6, "Scenario 8: USSR on neutral sq 5, moves forward to 6 (action=1)");
+
+  // Restore setTimeout and cleanup
+  window.setTimeout = realSetTimeout;
+  delete window.customSquares[3];
+  delete window.customSquares[5];
+  delete window.customSquares[9];
+  delete window.customSquares[15];
+  buildBoard();
+})();
+
 // ── Test: Reset ──
 console.log("\n\x1b[36mGame reset:\x1b[0m");
 (function() {

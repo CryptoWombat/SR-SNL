@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=7">
+  <link rel="stylesheet" href="style.css?v=14">
   <style>
     .admin-layout {
       position: relative;
@@ -620,7 +620,7 @@
     }
   </script>
 
-  <script src="game.js?v=9"></script>
+  <script src="game.js?v=15"></script>
   <script>
     const statusBar = document.getElementById("status-bar");
     let selectedSquare = null;
@@ -834,8 +834,16 @@
       sqYear.value = (data && data.year) || "";
       sqTitle.value = (data && data.title) || "";
       sqDesc.value = (data && data.desc) || "";
-      sqActionUSA.value = (data && data.actionUSA) || (data && !data.actionUSSR && data.action) || "";
-      sqActionUSSR.value = (data && data.actionUSSR) || (data && !data.actionUSA && data.action) || "";
+      if (data && (data.actionUSA || data.actionUSSR)) {
+        sqActionUSA.value = data.actionUSA || "";
+        sqActionUSSR.value = data.actionUSSR || "";
+      } else if (data && data.action) {
+        sqActionUSA.value = (!data.country || data.country === "usa") ? data.action : "";
+        sqActionUSSR.value = (!data.country || data.country === "ussr") ? data.action : "";
+      } else {
+        sqActionUSA.value = "";
+        sqActionUSSR.value = "";
+      }
     }
 
     // Save square
