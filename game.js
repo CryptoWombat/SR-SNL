@@ -923,7 +923,7 @@ function endGame(winnerId) {
   document.getElementById("winner-sub").textContent =
     winnerId === "usa"
       ? "America lands on the Moon first!"
-      : "The Soviet Union conquers the cosmos!";
+      : "You were so close to walking on the Moon but you see that the United States have passed you and reached the Moon first. Better luck next time.";
   overlay.classList.remove("hidden");
   launchConfetti(winnerId);
 }

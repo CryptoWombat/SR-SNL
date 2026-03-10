@@ -66,6 +66,7 @@ const state = window.state;
 const validateConnection = window.validateConnection;
 const switchTurn = window.switchTurn;
 const renderConnectionsList = window.renderConnectionsList;
+const endGame = window.endGame;
 const gameObj = window.game;
 
 let passed = 0;
@@ -515,6 +516,42 @@ console.log("\n\x1b[36mGame reset:\x1b[0m");
   assertEqual(state.players.usa.pos, 1, "USA reset to 1");
   assertEqual(state.currentPlayer, "ussr", "USSR goes first after reset");
   assertEqual(state.gameOver, false, "Game not over after reset");
+})();
+
+// ── Test: End game messages ──
+console.log("\n\x1b[36mEnd game messages:\x1b[0m");
+(function() {
+  const winnerTextEl = document.getElementById("winner-text");
+  const winnerSubEl = document.getElementById("winner-sub");
+  const overlay = document.getElementById("winner-overlay");
+
+  // USA wins
+  state.players.usa.icon = "🚀";
+  state.players.usa.name = "USA";
+  endGame("usa");
+  assert(overlay.classList.contains("hidden") === false, "Overlay visible when USA wins");
+  assert(winnerTextEl.textContent.includes("USA WINS"), "Winner text shows USA WINS");
+  assertEqual(
+    winnerSubEl.textContent,
+    "America lands on the Moon first!",
+    "USA winner subtext correct"
+  );
+
+  // Reset overlay hidden for next check
+  overlay.classList.add("hidden");
+
+  // USSR wins
+  state.gameOver = false;
+  state.players.ussr.icon = "🚀";
+  state.players.ussr.name = "USSR";
+  endGame("ussr");
+  assert(overlay.classList.contains("hidden") === false, "Overlay visible when USSR wins");
+  assert(winnerTextEl.textContent.includes("USSR WINS"), "Winner text shows USSR WINS");
+  assertEqual(
+    winnerSubEl.textContent,
+    "You were so close to walking on the Moon but you see that the United States have passed you and reached the Moon first. Better luck next time.",
+    "USSR winner subtext correct"
+  );
 })();
 
 // ── Summary ──
