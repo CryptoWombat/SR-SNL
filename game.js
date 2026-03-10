@@ -925,7 +925,6 @@ function endGame(winnerId) {
       ? "America lands on the Moon first!"
       : "You were so close to walking on the Moon but you see that the United States have passed you and reached the Moon first. Better luck next time.";
   overlay.classList.remove("hidden");
-  launchConfetti(winnerId);
 }
 
 // ── Confetti Celebration ──────────────────────────────────────────────
