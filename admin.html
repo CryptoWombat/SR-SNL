@@ -394,13 +394,13 @@
       <a href="index.html" class="back-link">&larr; Back to Game</a>
 
       <div id="status-bar" class="status-bar status-info">
-        Click a square to edit it. Configure rockets &amp; meteors below.
+        Click a square to edit its event text (the yellow Mission Control message). Configure rockets &amp; meteors below.
       </div>
 
       <!-- Square Editor -->
       <section id="square-editor-section">
         <div id="sq-no-selection" class="no-selection">
-          Click any square on the board to edit it.
+          <strong>Edit event text (Mission Control):</strong><br>Click any square on the board. The <em>Description</em> is the text shown in the yellow box when a player lands on that square.
         </div>
         <div id="sq-editor" style="display:none;">
           <div class="sq-editor-header">
@@ -423,6 +423,10 @@
             </select>
           </div>
           <div class="editor-row">
+            <label>Date <span style="font-weight:400;color:var(--text-secondary);">(e.g. Nov 3, 1957)</span>:</label>
+            <input type="text" id="sq-date" placeholder="Nov 3, 1957">
+          </div>
+          <div class="editor-row">
             <label>Year:</label>
             <input type="text" id="sq-year" placeholder="e.g. 1961">
           </div>
@@ -431,7 +435,7 @@
             <input type="text" id="sq-title" placeholder="Event name">
           </div>
           <div class="editor-row">
-            <label>Description:</label>
+            <label>Description <span style="font-weight:400;color:var(--text-secondary);">(shows in Mission Control when landed on)</span>:</label>
             <textarea id="sq-desc" placeholder="Event description..."></textarea>
           </div>
           <div class="editor-row">
@@ -802,6 +806,7 @@
     const sqNumBadge = document.getElementById("sq-num-badge");
     const sqCountry = document.getElementById("sq-country");
     const sqSentiment = document.getElementById("sq-sentiment");
+    const sqDate = document.getElementById("sq-date");
     const sqYear = document.getElementById("sq-year");
     const sqTitle = document.getElementById("sq-title");
     const sqDesc = document.getElementById("sq-desc");
@@ -820,6 +825,7 @@
       const data = getSquareData(sq);
       sqCountry.value = (data && data.country) || "";
       sqSentiment.value = (data && data.sentiment) || "good";
+      sqDate.value = (data && data.date) || "";
       sqYear.value = (data && data.year) || "";
       sqTitle.value = (data && data.title) || "";
       sqDesc.value = (data && data.desc) || "";
@@ -832,20 +838,21 @@
 
       const country = sqCountry.value;
       const sentiment = sqSentiment.value;
+      const date = sqDate.value.trim();
       const year = sqYear.value.trim();
       const title = sqTitle.value.trim();
       const desc = sqDesc.value.trim();
       const action = parseInt(sqAction.value) || 0;
 
-      if (!country && !year && !title && !desc && !action) {
+      if (!country && !date && !year && !title && !desc && !action) {
         delete customSquares[selectedSquare];
       } else {
         customSquares[selectedSquare] = {
           square: selectedSquare,
           country: country || "",
           sentiment: country ? sentiment : "",
-          year: year,
-          date: year,
+          year: year || date,
+          date: date || year,
           title: title,
           desc: desc,
           action: action
