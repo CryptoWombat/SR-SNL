@@ -457,6 +457,7 @@ function buildBoard() {
     for (let gc = 0; gc < 10; gc++) {
       const sq = gridPosToSquare(gr, gc);
       const ev = getSquareData(sq);
+      const isBlank = ev && ev.blank;
       const cell = document.createElement("div");
       cell.className = "cell";
       cell.dataset.square = sq;
@@ -476,14 +477,14 @@ function buildBoard() {
       numSpan.textContent = sq;
       cell.appendChild(numSpan);
 
-      if (ev && ev.year) {
+      if (!isBlank && ev && ev.year) {
         const yearSpan = document.createElement("span");
         yearSpan.className = "cell-year";
         yearSpan.textContent = ev.year;
         cell.appendChild(yearSpan);
       }
 
-      if (ev) {
+      if (!isBlank && ev && (ev.date || ev.title || ev.desc)) {
         cell.addEventListener("mouseenter", (e) => showTooltip(e, ev));
         cell.addEventListener("mousemove", moveTooltip);
         cell.addEventListener("mouseleave", hideTooltip);
@@ -511,6 +512,7 @@ function buildBoard() {
 const tooltipEl = document.getElementById("tooltip");
 
 function showTooltip(e, ev) {
+  if (ev && ev.blank) return;
   const flagLabel = ev.country === "ussr" ? "USSR" : ev.country === "usa" ? "USA" : "";
   const sentLabel = ev.sentiment === "good" ? "Achievement" : ev.sentiment === "bad" ? "Setback" : "";
   const dateLine = [flagLabel, ev.date].filter(Boolean).join(" — ");
@@ -774,7 +776,7 @@ function handleMove(steps) {
             finishTurn();
           });
         }, 600);
-      } else if (ev && (ev.desc || ev.title)) {
+      } else if (ev && !ev.blank && (ev.desc || ev.title)) {
         showMessage((ev.date ? ev.date + ", " : "") + (ev.desc || ev.title));
         finishTurn();
       } else {

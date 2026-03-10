@@ -222,6 +222,29 @@ console.log("\n\x1b[36mNeutral override rendering:\x1b[0m");
   buildBoard();
 })();
 
+// ── Test: Blank square rendering (number only) ──
+console.log("\n\x1b[36mBlank square rendering:\x1b[0m");
+(function() {
+  const buildBoard = window.buildBoard;
+  const showTooltip = window.showTooltip;
+  const hideTooltip = window.hideTooltip;
+  const tooltip = document.getElementById("tooltip");
+
+  window.customSquares[18] = { square: 18, country: "", blank: true, year: "1959", date: "1959", title: "Luna 1", desc: "Test" };
+  buildBoard();
+  const cell18 = document.querySelector('.cell[data-square="18"]');
+  assert(cell18.classList.contains("cell-neutral"), "Blank sq 18 still renders as neutral");
+  assert(cell18.querySelector(".cell-year") === null, "Blank sq 18 shows no year label");
+
+  // Tooltip should not show content for blank square
+  hideTooltip();
+  showTooltip({ clientX: 10, clientY: 10 }, window.customSquares[18]);
+  assert(tooltip.classList.contains("hidden"), "Blank square tooltip remains hidden");
+
+  delete window.customSquares[18];
+  buildBoard();
+})();
+
 // ── Test: Cell classes ──
 console.log("\n\x1b[36mCell classification:\x1b[0m");
 (function() {

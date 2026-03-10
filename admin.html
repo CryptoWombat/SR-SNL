@@ -439,6 +439,13 @@
             <textarea id="sq-desc" placeholder="Event description..."></textarea>
           </div>
           <div class="editor-row">
+            <label>Blank square:</label>
+            <select id="sq-blank">
+              <option value="">Normal</option>
+              <option value="1">Blank (show nothing except number)</option>
+            </select>
+          </div>
+          <div class="editor-row">
             <label>Action <span style="color:var(--usa,#3498db)">USA</span>:</label>
             <input type="number" id="sq-action-usa" placeholder="0" min="-99" max="99">
           </div>
@@ -814,6 +821,7 @@
     const sqYear = document.getElementById("sq-year");
     const sqTitle = document.getElementById("sq-title");
     const sqDesc = document.getElementById("sq-desc");
+    const sqBlank = document.getElementById("sq-blank");
     const sqActionUSA = document.getElementById("sq-action-usa");
     const sqActionUSSR = document.getElementById("sq-action-ussr");
 
@@ -834,6 +842,7 @@
       sqYear.value = (data && data.year) || "";
       sqTitle.value = (data && data.title) || "";
       sqDesc.value = (data && data.desc) || "";
+      sqBlank.value = (data && data.blank) ? "1" : "";
       if (data && (data.actionUSA || data.actionUSSR)) {
         sqActionUSA.value = data.actionUSA || "";
         sqActionUSSR.value = data.actionUSSR || "";
@@ -857,6 +866,7 @@
       const year = sqYear.value.trim();
       const title = sqTitle.value.trim();
       const desc = sqDesc.value.trim();
+      const blank = sqBlank && sqBlank.value === "1";
       const actionUSA = parseInt(sqActionUSA.value) || 0;
       const actionUSSR = parseInt(sqActionUSSR.value) || 0;
 
@@ -876,10 +886,11 @@
           square: selectedSquare,
           country: country || "",
           sentiment: country ? sentiment : "",
-          year: (year || date) || base.year || "",
-          date: (date || year) || base.date || "",
-          title: title || base.title || "",
-          desc: desc || base.desc || "",
+          blank: blank ? true : undefined,
+          year: blank ? "" : ((year || date) || base.year || ""),
+          date: blank ? "" : ((date || year) || base.date || ""),
+          title: blank ? "" : (title || base.title || ""),
+          desc: blank ? "" : (desc || base.desc || ""),
           actionUSA: actionUSA,
           actionUSSR: actionUSSR
         };
